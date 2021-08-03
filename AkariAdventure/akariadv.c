@@ -369,7 +369,7 @@ void init_game(Game* pgame) {
 		break;
 	}
 	
-	g.turn = 1;
+	g.turn = 0;
 
 	*pgame = g;
 }
