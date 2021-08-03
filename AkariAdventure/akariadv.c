@@ -9,15 +9,32 @@
 //  Return Value:
 //  Summary of all
 int check_any_overlay_position(Game game, int id_myself) {
-	int i;
+	int i = 0;
 	int flags = 0;
+	Point my_pos;
+
+	// On stage only
+	if (id_myself == ID_TRAP1 || id_myself == ID_TRAP2) {
+		my_pos.x = game.traps[id_myself - 10].x;
+		my_pos.x = game.traps[id_myself - 10].x;
+	}
+	else if (id_myself > -1 && id_myself < ID_TRAP1) {
+		my_pos.x = game.units[id_myself].position.x;
+		my_pos.y = game.units[id_myself].position.y;
+	}
+	else {
+		return -1;	// Wrong argument!
+	}
+	
+	if (my_pos.x < 0 || my_pos.x > 7 || my_pos.y < 0 || my_pos.y > 7)
+		return 0;
 
 	for (i = 0; i < NUMBER_OF_CHARACTERS; i++) {
 		// pass myself
 		if (i == id_myself)
 			continue;
 
-		if (get_distance(game.units[id_myself].position, game.units[i].position) == 0) {
+		if (get_distance(my_pos, game.units[i].position) == 0) {
 			flags += (int)pow(2, i);
 		}
 	}
@@ -189,7 +206,7 @@ void init_game(Game* pgame) {
 	// Initialize status
 	int i;
 	Game g;
-	Point distance;
+	int distance = 0, overlay_flags = 0;
 	
 	// Initialize Akari
 	g.units[ID_AKARI].id = ID_AKARI;
@@ -205,9 +222,9 @@ void init_game(Game* pgame) {
 	g.units[ID_VAMPIRE].hp = MAX_HP_OF_VAMPIRE;
 	while (1) {
 		randomize_position(&g.units[ID_VAMPIRE].position);
-		distance = get_vector(g.units[ID_VAMPIRE].position, g.units[ID_AKARI].position);
+		distance = get_distance(g.units[ID_VAMPIRE].position, g.units[ID_AKARI].position);
 		
-		if (distance.x == 0 && distance.y == 0)
+		if (distance == 0)
 			continue;
 
 		break;
@@ -221,12 +238,12 @@ void init_game(Game* pgame) {
 	while (1) {
 		randomize_position(&g.units[ID_PEOPLE1].position);
 
-		distance = get_vector(g.units[ID_PEOPLE1].position, g.units[ID_AKARI].position);
-		if (distance.x == 0 && distance.y == 0)
+		distance = get_distance(g.units[ID_PEOPLE1].position, g.units[ID_AKARI].position);
+		if (distance == 0)
 			continue;
 
-		distance = get_vector(g.units[ID_PEOPLE1].position, g.units[ID_VAMPIRE].position);
-		if (distance.x == 0 && distance.y == 0)
+		distance = get_distance(g.units[ID_PEOPLE1].position, g.units[ID_VAMPIRE].position);
+		if (distance == 0)
 			continue;
 
 		break;
@@ -239,7 +256,7 @@ void init_game(Game* pgame) {
 	while (1) {
 		randomize_position(&g.units[ID_PEOPLE2].position);
 
-		distance = get_vector(g.units[ID_PEOPLE2].position, g.units[ID_AKARI].position);
+		/*distance = get_vector(g.units[ID_PEOPLE2].position, g.units[ID_AKARI].position);
 		if (distance.x == 0 && distance.y == 0)
 			continue;
 
@@ -249,6 +266,9 @@ void init_game(Game* pgame) {
 
 		distance = get_vector(g.units[ID_PEOPLE2].position, g.units[ID_PEOPLE1].position);
 		if (distance.x == 0 && distance.y == 0)
+			continue;*/
+		overlay_flags = check_any_overlay_position(g, ID_PEOPLE2);
+		if (overlay_flags != 0)
 			continue;
 
 		break;
@@ -261,7 +281,7 @@ void init_game(Game* pgame) {
 	while (1) {
 		randomize_position(&g.units[ID_PEOPLE3].position);
 
-		distance = get_vector(g.units[ID_PEOPLE3].position, g.units[ID_AKARI].position);
+		/*distance = get_vector(g.units[ID_PEOPLE3].position, g.units[ID_AKARI].position);
 		if (distance.x == 0 && distance.y == 0)
 			continue;
 
@@ -275,6 +295,9 @@ void init_game(Game* pgame) {
 
 		distance = get_vector(g.units[ID_PEOPLE3].position, g.units[ID_PEOPLE2].position);
 		if (distance.x == 0 && distance.y == 0)
+			continue;*/
+		overlay_flags = check_any_overlay_position(g, ID_PEOPLE3);
+		if (overlay_flags != 0)
 			continue;
 
 		break;
@@ -287,7 +310,7 @@ void init_game(Game* pgame) {
 	while (1) {
 		randomize_position(&g.units[ID_PEOPLE4].position);
 
-		distance = get_vector(g.units[ID_PEOPLE4].position, g.units[ID_AKARI].position);
+		/*distance = get_vector(g.units[ID_PEOPLE4].position, g.units[ID_AKARI].position);
 		if (distance.x == 0 && distance.y == 0)
 			continue;
 
@@ -305,6 +328,9 @@ void init_game(Game* pgame) {
 
 		distance = get_vector(g.units[ID_PEOPLE4].position, g.units[ID_PEOPLE3].position);
 		if (distance.x == 0 && distance.y == 0)
+			continue;*/
+		overlay_flags = check_any_overlay_position(g, ID_PEOPLE4);
+		if (overlay_flags != 0)
 			continue;
 
 		break;
@@ -315,7 +341,7 @@ void init_game(Game* pgame) {
 	while (1) {
 		randomize_position(&g.traps[0]);
 
-		distance = get_vector(g.traps[0], g.units[ID_AKARI].position);
+		/*distance = get_vector(g.traps[0], g.units[ID_AKARI].position);
 		if (distance.x == 0 && distance.y == 0)
 			continue;
 
@@ -337,6 +363,9 @@ void init_game(Game* pgame) {
 
 		distance = get_vector(g.traps[0], g.units[ID_PEOPLE4].position);
 		if (distance.x == 0 && distance.y == 0)
+			continue;*/
+		overlay_flags = check_any_overlay_position(g, ID_TRAP1);
+		if (overlay_flags != 0)
 			continue;
 
 		break;
@@ -345,7 +374,7 @@ void init_game(Game* pgame) {
 	while (1) {
 		randomize_position(&g.traps[1]);
 
-		distance = get_vector(g.traps[1], g.units[ID_AKARI].position);
+		/*distance = get_vector(g.traps[1], g.units[ID_AKARI].position);
 		if (distance.x == 0 && distance.y == 0)
 			continue;
 
@@ -371,6 +400,9 @@ void init_game(Game* pgame) {
 
 		distance = get_vector(g.traps[1], g.traps[0]);
 		if (distance.x == 0 && distance.y == 0)
+			continue;*/
+		overlay_flags = check_any_overlay_position(g, ID_TRAP2);
+		if (overlay_flags != 0)
 			continue;
 
 		break;
