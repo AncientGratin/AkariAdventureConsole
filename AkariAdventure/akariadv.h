@@ -37,16 +37,18 @@
 //  A binary status(TRUE/FALSE) of each character
 //  is indicated by a number.
 // ex)
-//  AKARI		: 0B0000000001
-//  VAMPIRE		: 0B0000000010
-//  PEOPLE1		: 0B0000000100
-//  PEOPLE2		: 0B0000001000
-//  PEOPLE3		: 0B0000010000
-//  PEOPLE4		: 0B0000100000
-//  SERVANT1	: 0B0001000000
-//  SERVANT2	: 0B0010000000
-//  SERVANT3	: 0B0100000000
-//  SERVANT4	: 0B1000000000
+//  AKARI		: 0B000000000001
+//  VAMPIRE		: 0B000000000010
+//  PEOPLE1		: 0B000000000100
+//  PEOPLE2		: 0B000000001000
+//  PEOPLE3		: 0B000000010000
+//  PEOPLE4		: 0B000000100000
+//  SERVANT1	: 0B000001000000
+//  SERVANT2	: 0B000010000000
+//  SERVANT3	: 0B000100000000
+//  SERVANT4	: 0B001000000000
+//  TRAP1		: 0B010000000000
+//  TRAP2		: 0B100000000000
 #define CHECK_VALUE_AKARI		0B1
 #define CHECK_VALUE_VAMPIRE		0B10
 #define CHECK_VALUE_PEOPLE1		0B100
@@ -57,6 +59,8 @@
 #define CHECK_VALUE_SERVANT2	0B10000000
 #define CHECK_VALUE_SERVANT3	0B100000000
 #define CHECK_VALUE_SERVANT4	0B1000000000
+#define CHECK_VALUE_TRAP1		0B10000000000
+#define CHECK_VALUE_TRAP2		0B100000000000
 
 // ID is pair with check value.
 // 2 ^ (ID) = (CHECK_VALUE)
@@ -70,6 +74,8 @@
 #define ID_SERVANT2	7
 #define ID_SERVANT3	8
 #define ID_SERVANT4	9
+#define ID_TRAP1	10
+#define ID_TRAP2	11
 
 // Name
 #define NAME_AKARI "Akari"
@@ -98,7 +104,7 @@
 #define FLAG_WARNING_VILLAGER	0B1000
 
 // Get a flag
-#define GET_FLAG(flags, flag) flags / flag % flag
+#define GET_FLAG(flags, flag) flags / flag % 2
 
 typedef struct _Point {
 	int x, y;
@@ -123,8 +129,7 @@ typedef struct _Game {
 } Game;
 
 // Declaration of functions
-int check_any_overlay_position(Game, int);		// Check if there is any overlay position of units
-int check_overlay_position(Point, Point);	// Check if overlay position of 2 units
+int check_any_overlay_position(Game, int, int);		// Check if there is any overlay position of units
 void display(Game);		// Display the game information on the screen.
 int get_distance(Point, Point);	// Get distance between 2 points.
 Point get_vector(Point, Point);	// Get vector between 2 points.

@@ -1,0 +1,15 @@
+﻿  akariadv.c
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(198,6): warning C4101: 'i': unreferenced local variable
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(358,10): warning C4473: 'scanf_s' : not enough arguments passed for format string
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(358,10): message : placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(358,10): message : the missing variadic argument 2 is required by format string '%c'
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(358,10): message : this argument is used as a buffer size
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(444,10): warning C4473: 'scanf_s' : not enough arguments passed for format string
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(444,10): message : placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(444,10): message : the missing variadic argument 2 is required by format string '%c'
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(444,10): message : this argument is used as a buffer size
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(445,10): warning C4473: 'scanf_s' : not enough arguments passed for format string
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(445,10): message : placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(445,10): message : the missing variadic argument 2 is required by format string '%c'
+C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\akariadv.c(445,10): message : this argument is used as a buffer size
+  AkariAdventure.vcxproj -> C:\Users\ancie\Dropbox\development\AkariAdventureConsole\AkariAdventure\x64\Debug\AkariAdventure.exe
