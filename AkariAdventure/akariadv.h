@@ -104,7 +104,7 @@
 #define FLAG_WARNING_VILLAGER	0B1000
 
 // Get a flag
-#define GET_FLAG(flags, flag) flags / flag % flag
+#define GET_FLAG(flags, flag) flags / flag % 2
 
 typedef struct _Point {
 	int x, y;
@@ -129,8 +129,7 @@ typedef struct _Game {
 } Game;
 
 // Declaration of functions
-int check_any_overlay_position(Game, int);		// Check if there is any overlay position of units
-int check_overlay_position(Point, Point);	// Check if overlay position of 2 units
+int check_any_overlay_position(Game, int, int);		// Check if there is any overlay position of units
 void display(Game);		// Display the game information on the screen.
 int get_distance(Point, Point);	// Get distance between 2 points.
 Point get_vector(Point, Point);	// Get vector between 2 points.
