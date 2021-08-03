@@ -10,12 +10,19 @@
 //  Summary of all
 int check_any_overlay_position(Game game, int id_myself) {
 	int i;
-	int result = 0;
-	Point distance;
+	int flags = 0;
 
 	for (i = 0; i < NUMBER_OF_CHARACTERS; i++) {
-		
+		// pass myself
+		if (i == id_myself)
+			continue;
+
+		if (get_distance(game.units[id_myself].position, game.units[i].position) == 0) {
+			flags += (int)pow(2, i);
+		}
 	}
+
+	return flags;
 }
 
 // Check if overlay position of 2 units
