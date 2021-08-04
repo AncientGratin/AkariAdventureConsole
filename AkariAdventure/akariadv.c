@@ -199,9 +199,6 @@ void display(Game game) {
 			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT4)) {
 				dbg_c = dbg_c == ' ' ? 'S' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT1)) {
-				dbg_c = dbg_c == ' ' ? 'S' : 'O';
-			}
 			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_TRAP1)) {
 				dbg_c = dbg_c == ' ' ? 'T' : 'O';
 			}
@@ -253,9 +250,135 @@ void display(Game game) {
 	printf(" -----------------  AncientGratin\n\n");
 }
 
+// Get the direction from routine.
+int get_direction(Point routine) {
+	if (routine.x == 0) {
+		if (routine.y == 0)
+			return STAY;
+
+		return routine.y > 0 ? SOUTH : NORTH;
+	}
+	else if (routine.y == 0) {
+		return routine.x > 0 ? EAST : WEST;
+	}
+	else {
+		if (routine.x > 0) {
+			if (routine.y > 0) {
+				return routine.x == routine.y ? SOUTHEAST : routine.x > routine.y ? EAST : SOUTH;
+			}
+			else {
+				return routine.x == routine.y ? NORTHEAST : routine.x > routine.y ? EAST : NORTH;
+			}
+		}
+		else {
+			if (routine.y > 0) {
+				return routine.x == routine.y ? SOUTHWEST : routine.x > routine.y ? WEST : SOUTH;
+			}
+			else {
+				return routine.x == routine.y ? NORTHWEST : routine.x > routine.y ? WEST : NORTH;
+			}
+		}
+	}
+}
+
 // Get distance between 2 points.
 int get_distance(Point from, Point to) {
 	return abs(to.x - from.x) + abs(to.y - from.y);
+}
+
+// Decide the direction that Vampire or a servant tracks Akari or a villager.
+int get_track_direction(Unit* punits, int my_id) {
+	int arr_distance[5] = { 15, };
+	int arr_distance_from_akari[4] = { 0, };
+	int i = 0, min_distance = 0, count = 0;
+	int min_id = 0, direction = STAY;
+	int max_id_from_akari = 0, count_max_from_akari = 0;
+	Point routine;
+
+	// Wrong argument
+	if (my_id != ID_VAMPIRE) {
+		if (my_id < ID_SERVANT1 || my_id > ID_SERVANT4)
+			return OTHER;
+	}
+
+	// Tracks the nearest unit.
+	// When Akari and another villager is the nearest, tracks a villager.
+	// When 2 or more villagers is the nearest, tracks one the most far from Akari.
+	arr_distance[0] = min_distance = get_distance(punits[my_id].position, punits[ID_AKARI].position);
+	count++;
+
+	for (i = 0; i < 4; i++) {
+		arr_distance[i + 1] = get_distance(punits[my_id].position, punits[ID_PEOPLE1 + i].position);
+
+		if (arr_distance[i + 1] == min_distance)
+			count++;
+
+		if (arr_distance[i + 1] < min_distance) {
+			min_distance = arr_distance[i + 1];
+			min_id = i + ID_PEOPLE1;
+		}
+	}
+
+	if (count == 1) {
+		direction = get_direction(get_vector(punits[my_id].position, punits[min_id].position));
+	}
+	else {
+		for (i = 0; i < 4; i++) {
+			arr_distance_from_akari[i] = get_distance(punits[ID_PEOPLE1 + i].position, punits[ID_AKARI].position);
+
+			if (punits[i + ID_PEOPLE1].position.x == -1 ||
+				punits[i + ID_PEOPLE1].position.y == -1)
+				continue;
+
+			if (i == 0) {
+				max_id_from_akari = ID_PEOPLE1;
+				count_max_from_akari++;
+			}
+			else {
+				if (arr_distance_from_akari[i - 1] < arr_distance_from_akari[i]) {
+					max_id_from_akari = i + ID_PEOPLE1;
+				}
+				if (arr_distance_from_akari[i - 1] == arr_distance_from_akari[i]) {
+					count_max_from_akari++;
+				}
+			}
+			
+		}
+
+		if (count_max_from_akari > 1) {
+			while (1) {
+				max_id_from_akari = rand() % 4 + ID_PEOPLE1;
+
+				if (punits[max_id_from_akari].position.x == -1 ||
+					punits[max_id_from_akari].position.y == -1)
+					continue;
+
+				if(get_distance(punits[my_id].position, punits[max_id_from_akari].position) == min(arr_distance[1], arr_distance[2], arr_distance[3], arr_distance[4]) &&
+					get_distance(punits[my_id].position, punits[max_id_from_akari].position) == max(arr_distance_from_akari[0], arr_distance_from_akari[1], arr_distance_from_akari[2], arr_distance_from_akari[3]))
+					break;
+			}
+		}
+
+		direction = get_direction(get_vector(punits[my_id].position, punits[max_id_from_akari].position));
+	}
+
+	switch (direction) {
+	case WEST:
+	case NORTH:
+	case SOUTH:
+	case EAST:
+		return direction;
+	case NORTHWEST:
+		return rand() % 2 ? NORTH : WEST;
+	case NORTHEAST:
+		return rand() % 2 ? NORTH : EAST;
+	case SOUTHWEST:
+		return rand() % 2 ? SOUTH : WEST;
+	case SOUTHEAST:
+		return rand() % 2 ? SOUTH : EAST;
+	default:
+		return OTHER;
+	}
 }
 
 // Get vector between 2 points.
@@ -639,7 +762,7 @@ void test() {
 void turn(Game* pgame) {
 	Point prev_pos, new_pos;
 	int i = 0;
-	int flag_overlay = 0, damage = 0, dimension = 0;
+	int flag_overlay = 0, damage = 0, direction = 0;
 
 	// Increase the turn number.
 	pgame->turn++;
@@ -663,29 +786,32 @@ void turn(Game* pgame) {
 		display(*pgame);	// Refresh game information
 	}
 	flag_overlay = check_any_overlay_position(*pgame, ID_AKARI, ID_TRAP2);
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
-		// Met vampire
-		damage = min(pgame->units[ID_AKARI].hp, pgame->units[ID_VAMPIRE].hp);
-		pgame->units[ID_AKARI].hp -= damage;
-		pgame->units[ID_VAMPIRE].hp -= damage;
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
+		// Touch a trap
+		pgame->traps[0].x = -1;
+		pgame->traps[0].y = -1;
 
-		display(*pgame);
+		pgame->units[ID_AKARI].hp =
+			max(pgame->units[ID_AKARI].hp - 3, 0);
 
 		if (pgame->units[ID_AKARI].hp == 0) {
-			if (pgame->units[ID_VAMPIRE].hp != 0) {
-				// You lose
-				printf("Akari lost!\n");
-			}
-			else {
-				// Draw
-				printf("Akari and Vampire killed each other!\n");
-			}
+			display(*pgame);
+			printf("Akari lost!\n");
 			printf("Thank you for playing!");
 			exit(0);
 		}
-		else if (pgame->units[ID_VAMPIRE].hp == 0) {
-			// You win
-			printf("Akari win!\n");
+	}
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2) == 1) {
+		// Touch a trap
+		pgame->traps[1].x = -1;
+		pgame->traps[1].y = -1;
+
+		pgame->units[ID_AKARI].hp =
+			max(pgame->units[ID_AKARI].hp - 3, 0);
+
+		if (pgame->units[ID_AKARI].hp == 0) {
+			display(*pgame);
+			printf("Akari lost!\n");
 			printf("Thank you for playing!");
 			exit(0);
 		}
@@ -756,32 +882,29 @@ void turn(Game* pgame) {
 			exit(0);
 		}
 	}
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
-		// Touch a trap
-		pgame->traps[0].x = -1;
-		pgame->traps[0].y = -1;
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
+		// Met vampire
+		damage = min(pgame->units[ID_AKARI].hp, pgame->units[ID_VAMPIRE].hp);
+		pgame->units[ID_AKARI].hp -= damage;
+		pgame->units[ID_VAMPIRE].hp -= damage;
 
-		pgame->units[ID_AKARI].hp =
-			max(pgame->units[ID_AKARI].hp - 3, 0);
+		display(*pgame);
 
 		if (pgame->units[ID_AKARI].hp == 0) {
-			display(*pgame);
-			printf("Akari lost!\n");
+			if (pgame->units[ID_VAMPIRE].hp != 0) {
+				// You lose
+				printf("Akari lost!\n");
+			}
+			else {
+				// Draw
+				printf("Akari and Vampire killed each other!\n");
+			}
 			printf("Thank you for playing!");
 			exit(0);
 		}
-	}
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2) == 1) {
-		// Touch a trap
-		pgame->traps[1].x = -1;
-		pgame->traps[1].y = -1;
-
-		pgame->units[ID_AKARI].hp =
-			max(pgame->units[ID_AKARI].hp - 3, 0);
-
-		if (pgame->units[ID_AKARI].hp == 0) {
-			display(*pgame);
-			printf("Akari lost!\n");
+		else if (pgame->units[ID_VAMPIRE].hp == 0) {
+			// You win
+			printf("Akari won!\n");
 			printf("Thank you for playing!");
 			exit(0);
 		}
@@ -799,9 +922,9 @@ void turn(Game* pgame) {
 				continue;
 
 			while (1) {
-				dimension = rand() % 4;
+				direction = rand() % 4;
 
-				switch (dimension) {
+				switch (direction) {
 				case WEST:
 					new_pos.x--;
 					break;
@@ -828,29 +951,6 @@ void turn(Game* pgame) {
 			pgame->units[i].position = new_pos;
 			flag_overlay = check_any_overlay_position(*pgame, i, ID_TRAP2);
 
-			// A villager met Akari
-			if (GET_FLAG(flag_overlay, CHECK_VALUE_AKARI) == 1) {
-				if (pgame->units[ID_AKARI].hp < MAX_HP_OF_AKARI) {
-					pgame->units[ID_AKARI].hp++;
-				}
-			}
-
-			// A villager met Vampire
-			if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
-				morph_servant(&pgame->units[i], &pgame->units[i + 4]);
-			}
-
-			// A villager met a servant
-			if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1 ||
-				GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1 ||
-				GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1 ||
-				GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
-
-				pgame->units[i].hp = 0;
-				pgame->units[i].position.x = -1;
-				pgame->units[i].position.y = -1;
-			}
-
 			// A villager touched a trap
 			if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
 				pgame->units[i].hp = 0;
@@ -868,16 +968,234 @@ void turn(Game* pgame) {
 				pgame->traps[1].x = -1;
 				pgame->traps[1].y = -1;
 			}
+
+			// A villager met Akari
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_AKARI) == 1) {
+				if (pgame->units[ID_AKARI].hp < MAX_HP_OF_AKARI) {
+					pgame->units[ID_AKARI].hp++;
+				}
+			}
+
+			// A villager met a servant
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1 ||
+				GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1 ||
+				GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1 ||
+				GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
+
+				pgame->units[i].hp = 0;
+				pgame->units[i].position.x = -1;
+				pgame->units[i].position.y = -1;
+			}
+
+			// A villager met Vampire
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
+				morph_servant(&pgame->units[i], &pgame->units[i + 4]);
+			}
 		}
 
 		// Servants' turn
 		//  Servants move per 5 turns.
+		for (i = ID_SERVANT1; i <= ID_SERVANT4; i++) {
+
+			new_pos.x = prev_pos.x = pgame->units[i].position.x;
+			new_pos.y = prev_pos.y = pgame->units[i].position.y;
+
+			// An inactive servant doesn't move.
+			if (prev_pos.x == -1 || prev_pos.y == -1)
+				continue;
+
+			while (1) {
+				direction = get_track_direction(pgame->units, i);
+
+				switch (direction) {
+				case WEST:
+					new_pos.x--;
+					break;
+				case NORTH:
+					new_pos.y--;
+					break;
+				case SOUTH:
+					new_pos.y++;
+					break;
+				case EAST:
+					new_pos.x++;
+					break;
+				}
+
+				if (new_pos.x > -1 && new_pos.x < 8 &&
+					new_pos.y > -1 && new_pos.x < 8) {
+					break;
+				}
+
+				new_pos.x = prev_pos.x;
+				new_pos.y = prev_pos.y;
+			}
+
+			pgame->units[i].position = new_pos;
+			flag_overlay = check_any_overlay_position(*pgame, i, ID_TRAP2);
+
+			// A servant touched a trap
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
+				pgame->units[i].hp = 0;
+				pgame->units[i].position.x = -1;
+				pgame->units[i].position.y = -1;
+
+				pgame->traps[0].x = -1;
+				pgame->traps[0].y = -1;
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2) == 1) {
+				pgame->units[i].hp = 0;
+				pgame->units[i].position.x = -1;
+				pgame->units[i].position.y = -1;
+
+				pgame->traps[1].x = -1;
+				pgame->traps[1].y = -1;
+			}
+
+			// A servant met Vampire
+			// Nothing happened.
+
+			// A servant met a villager
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1) {
+				morph_servant(&pgame->units[ID_PEOPLE1], &pgame->units[ID_SERVANT1]);
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1) {
+				morph_servant(&pgame->units[ID_PEOPLE2], &pgame->units[ID_SERVANT2]);
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1) {
+				morph_servant(&pgame->units[ID_PEOPLE3], &pgame->units[ID_SERVANT3]);
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
+				morph_servant(&pgame->units[ID_PEOPLE4], &pgame->units[ID_SERVANT4]);
+			}
+
+			// A servant met Akari
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_AKARI) == 1) {
+				pgame->units[i].hp = 0;
+				pgame->units[i].position.x = -1;
+				pgame->units[i].position.y = -1;
+
+				pgame->units[ID_AKARI].hp--;
+
+				if (pgame->units[ID_AKARI].hp == 0) {
+					display(*pgame);
+					printf("Akari lost!\n");
+					printf("Thank you for playing!");
+					exit(0);
+				}
+			}
+		}
 	}
 
-	
-	
 	// Vampire's turn
 	//  Vampire moves per 2 turns.
+	if (pgame->turn % 2 == 0) {
+		new_pos.x = prev_pos.x = pgame->units[ID_VAMPIRE].position.x;
+		new_pos.y = prev_pos.y = pgame->units[ID_VAMPIRE].position.y;
 
-	
+		while (1) {
+			direction = get_track_direction(pgame->units, ID_VAMPIRE);
+
+			switch (direction) {
+			case WEST:
+				new_pos.x--;
+				break;
+			case NORTH:
+				new_pos.y--;
+				break;
+			case SOUTH:
+				new_pos.y++;
+				break;
+			case EAST:
+				new_pos.x++;
+				break;
+			}
+
+			if (new_pos.x > -1 && new_pos.x < 8 &&
+				new_pos.y > -1 && new_pos.x < 8) {
+				break;
+			}
+
+			new_pos.x = prev_pos.x;
+			new_pos.y = prev_pos.y;
+		}
+
+		pgame->units[ID_VAMPIRE].position = new_pos;
+		flag_overlay = check_any_overlay_position(*pgame, ID_VAMPIRE, ID_TRAP2);
+
+		// Vampire touched a trap
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
+			pgame->traps[0].x = -1;
+			pgame->traps[0].y = -1;
+
+			pgame->units[ID_VAMPIRE].hp =
+				max(pgame->units[ID_VAMPIRE].hp - 3, 0);
+
+			if (pgame->units[ID_VAMPIRE].hp == 0) {
+				display(*pgame);
+				printf("Akari won!\n");
+				printf("Thank you for playing!");
+				exit(0);
+			}
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
+			pgame->traps[1].x = -1;
+			pgame->traps[1].y = -1;
+
+			pgame->units[ID_VAMPIRE].hp =
+				max(pgame->units[ID_VAMPIRE].hp - 3, 0);
+
+			if (pgame->units[ID_VAMPIRE].hp == 0) {
+				display(*pgame);
+				printf("Akari won!\n");
+				printf("Thank you for playing!");
+				exit(0);
+			}
+		}
+
+		// Vampire met a servant
+		// Nothing happened.
+
+		// Vampire met a villager
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1) {
+			morph_servant(&pgame->units[ID_PEOPLE1], &pgame->units[ID_SERVANT1]);
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1) {
+			morph_servant(&pgame->units[ID_PEOPLE2], &pgame->units[ID_SERVANT2]);
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1) {
+			morph_servant(&pgame->units[ID_PEOPLE3], &pgame->units[ID_SERVANT3]);
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
+			morph_servant(&pgame->units[ID_PEOPLE4], &pgame->units[ID_SERVANT4]);
+		}
+
+		// Vampire met Akari
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_AKARI) == 1) {
+			damage = min(pgame->units[ID_AKARI].hp, pgame->units[ID_VAMPIRE].hp);
+			pgame->units[ID_AKARI].hp -= damage;
+			pgame->units[ID_VAMPIRE].hp -= damage;
+
+			display(*pgame);
+
+			if (pgame->units[ID_AKARI].hp == 0) {
+				if (pgame->units[ID_VAMPIRE].hp != 0) {
+					// You lose
+					printf("Akari lost!\n");
+				}
+				else {
+					// Draw
+					printf("Akari and Vampire killed each other!\n");
+				}
+				printf("Thank you for playing!");
+				exit(0);
+			}
+			else if (pgame->units[ID_VAMPIRE].hp == 0) {
+				// You win
+				printf("Akari won!\n");
+				printf("Thank you for playing!");
+				exit(0);
+			}
+		}
+	}
 }

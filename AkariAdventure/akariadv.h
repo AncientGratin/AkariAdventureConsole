@@ -8,6 +8,10 @@
 #define EAST 4
 #define STAY 0
 #define OTHER -1
+#define NORTHWEST 21
+#define NORTHEAST 24
+#define SOUTHWEST 31
+#define SOUTHEAST 34
 
 // The capacity of name
 #define CAPACITY_OF_NAME 9
@@ -132,7 +136,9 @@ typedef struct _Game {
 int check_any_overlay_position(Game, int, int);			// Check if there is any overlay position of units by some unit
 int check_any_overlay_position_by_point(Game, Point);	// Check if there is any overlay position of units by position
 void display(Game);		// Display the game information on the screen.
+int get_direction(Point);	// Get the direction from routine.
 int get_distance(Point, Point);	// Get distance between 2 points.
+int get_track_direction(Unit*, int);	// Decide the direction that Vampire or a servant tracks Akari or a villager.
 Point get_vector(Point, Point);	// Get vector between 2 points.
 int get_warning_flags(Game);		// Get flags of warning
 void init_game(Game*);		// Initialize the game
