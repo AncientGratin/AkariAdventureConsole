@@ -5,6 +5,8 @@
 #include <time.h>
 #include "akariadv.h"
 
+#define DEBUG 0
+
 // Check if there is any overlay position of units
 //  Return Value:
 //  Summary of all
@@ -13,7 +15,6 @@ int check_any_overlay_position(Game game, int id_myself, int max_id) {
 	int flags = 0;
 	Point my_pos;
 
-	// On stage only
 	if (id_myself == ID_TRAP1 || id_myself == ID_TRAP2) {
 		my_pos.x = game.traps[id_myself - 10].x;
 		my_pos.y = game.traps[id_myself - 10].y;
@@ -26,6 +27,7 @@ int check_any_overlay_position(Game game, int id_myself, int max_id) {
 		return -1;	// Wrong argument!
 	}
 	
+	// On stage only
 	if (my_pos.x < 0 || my_pos.x > 7 || my_pos.y < 0 || my_pos.y > 7)
 		return 0;
 
@@ -48,9 +50,58 @@ int check_any_overlay_position(Game game, int id_myself, int max_id) {
 	return flags;
 }
 
+// Check if there is any overlay position of units by position
+//  Return Value:
+//  Summary of all
+int check_any_overlay_position_by_point(Game game, Point here) {
+	int i = 0;
+	int flags = 0;
+	Point there;
+
+	if (here.x < 0 || here.x > 7 || here.y < 0 || here.y > 7) {
+		return -1;	// Wrong argument!
+	}
+
+	for (i = 0; i <= ID_SERVANT4; i++) {
+		there.x = game.units[i].position.x;
+		there.y = game.units[i].position.y;
+
+		if (there.x < 0 || there.x > 7 || there.y < 0 || there.y > 7) {
+			continue;
+		}
+
+		if (get_distance(here, there) == 0) {
+			flags += (int)pow(2, i);
+		}
+	}
+
+	there.x = game.traps[0].x;
+	there.y = game.traps[0].y;
+
+	if (there.x > -1 && there.x < 8 && 
+		there.y > -1 && there.y < 8 &&
+		get_distance(here, there) == 0 )
+		flags += (int)pow(2, ID_TRAP1);
+
+	there.x = game.traps[1].x;
+	there.y = game.traps[1].y;
+
+	if (there.x > -1 && there.x < 8 &&
+		there.y > -1 && there.y < 8 &&
+		get_distance(here, there) == 0)
+		flags += (int)pow(2, ID_TRAP2);
+
+	return flags;
+}
+
 // Display the game information on the screen.
 void display(Game game) {
 	int i, j;
+#ifdef DEBUG
+	char dbg_c = ' ';	// For debugging
+	int dbg_overlay_flags = 0;
+	Point dbg_pos;
+#endif
 	int warn_flags = get_warning_flags(game);
 	system("cls");
 
@@ -58,7 +109,7 @@ void display(Game game) {
 	//printf(" AKARI'S ADVENTURE\n");
 	//printf("\n");
 	//printf("  0 1 2 3 4 5 6 7\n");
-	//printf(" -----------------  Akari [9/5]\n");
+	//printf(" -----------------  Akari   [9/5]\n");
 	//printf("0| | | | | | | | |  Vampire [9]\n");
 	//printf(" -----------------\n");
 	//printf("1| | | | | | | | |  Warning!\n");
@@ -86,7 +137,7 @@ void display(Game game) {
 
 		switch (i) {
 		case 0:
-			printf("  Akari [%d/%d]", game.units[ID_AKARI].hp, game.units[ID_AKARI].attack_chance);
+			printf("  Akari   [%d/%d]", game.units[ID_AKARI].hp, game.units[ID_AKARI].attack_chance);
 			break;
 		case 2:
 			printf("  [%c] Adjacent trap", GET_FLAG(warn_flags, FLAG_WARNING_TRAP) > 0 ? '*' : ' ');
@@ -105,8 +156,66 @@ void display(Game game) {
 		printf("\n%d", i);
 
 		for (j = 0; j < 8; j++) {
+			// Akari : A
+			// Vampire : V
+			// People : P
+			// Servant : S
+			// Trap : T
+			// Overlay : O
+
+#if DEBUG
+			dbg_pos.x = j;
+			dbg_pos.y = i;
+
+			dbg_overlay_flags = check_any_overlay_position_by_point(game, dbg_pos);
+
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_AKARI)) {
+				dbg_c = 'A';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_VAMPIRE)) {
+				dbg_c = dbg_c == ' ' ? 'V' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE1)) {
+				dbg_c = dbg_c == ' ' ? 'P' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE2)) {
+				dbg_c = dbg_c == ' ' ? 'P' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE3)) {
+				dbg_c = dbg_c == ' ' ? 'P' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE4)) {
+				dbg_c = dbg_c == ' ' ? 'P' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT1)) {
+				dbg_c = dbg_c == ' ' ? 'S' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT2)) {
+				dbg_c = dbg_c == ' ' ? 'S' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT3)) {
+				dbg_c = dbg_c == ' ' ? 'S' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT4)) {
+				dbg_c = dbg_c == ' ' ? 'S' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT1)) {
+				dbg_c = dbg_c == ' ' ? 'S' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_TRAP1)) {
+				dbg_c = dbg_c == ' ' ? 'T' : 'O';
+			}
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_TRAP2)) {
+				dbg_c = dbg_c == ' ' ? 'T' : 'O';
+			}
+			
+			printf("|%c", dbg_c);
+
+			dbg_c = ' ';
+#else
 			printf("|%c",
 				game.units[ID_AKARI].position.x == j && game.units[ID_AKARI].position.y == i ? 'A' : ' ');
+#endif
 		}
 
 		printf("|");
@@ -367,38 +476,52 @@ char input_move_command() {
 }
 
 // People ===> Servant
-void morph_servant(Unit* ppeople) {
+void morph_servant(Unit* ppeople, Unit* pservant) {
 	Unit new_servant;
 
-	// When the argument is not a people, it does not happened.
-	switch (ppeople->id) {
-	case ID_PEOPLE1:
-		new_servant.id = ID_SERVANT1;
-		strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT1);
-		break;
-	case ID_PEOPLE2:
-		new_servant.id = ID_SERVANT2;
-		strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT2);
-		break;
-	case ID_PEOPLE3:
-		new_servant.id = ID_SERVANT3;
-		strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT3);
-		break;
-	case ID_PEOPLE4:
-		new_servant.id = ID_SERVANT4;
-		strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT4);
-		break;
-	default:
+	// In case of wrong argument:
+	// Nothing happened.
+	if (ppeople->id < ID_PEOPLE1 || ppeople->id > ID_PEOPLE4)
 		return;
-	}
+	if (pservant->id < ID_SERVANT1 || pservant->id > ID_SERVANT4)
+		return;
 
-	// When a people is turned to a servant, HP is initialized.
-	new_servant.hp = MAX_HP_OF_SERVANT;
-	new_servant.attack_chance = -1;
-	new_servant.position.x = ppeople->position.x;
-	new_servant.position.y = ppeople->position.y;
+	// When the argument is not a people, it does not happened.
+	//switch (ppeople->id) {
+	//case ID_PEOPLE1:
+	//	new_servant.id = ID_SERVANT1;
+	//	strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT1);
+	//	break;
+	//case ID_PEOPLE2:
+	//	new_servant.id = ID_SERVANT2;
+	//	strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT2);
+	//	break;
+	//case ID_PEOPLE3:
+	//	new_servant.id = ID_SERVANT3;
+	//	strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT3);
+	//	break;
+	//case ID_PEOPLE4:
+	//	new_servant.id = ID_SERVANT4;
+	//	strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT4);
+	//	break;
+	//default:
+	//	return;
+	//}
 
-	*ppeople = new_servant;
+	//// When a people is turned to a servant, HP is initialized.
+	//new_servant.hp = MAX_HP_OF_SERVANT;
+	//new_servant.attack_chance = -1;
+	//new_servant.position.x = ppeople->position.x;
+	//new_servant.position.y = ppeople->position.y;
+
+	//*ppeople = new_servant;
+
+	pservant->position.x = ppeople->position.x;
+	pservant->position.y = ppeople->position.y;
+
+	ppeople->position.x = -1;
+	ppeople->position.y = -1;
+	ppeople->hp = 0;
 }
 
 // Move a unit
@@ -714,7 +837,7 @@ void turn(Game* pgame) {
 
 			// A villager met Vampire
 			if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
-				morph_servant(&pgame->units[i]);
+				morph_servant(&pgame->units[i], &pgame->units[i + 4]);
 			}
 
 			// A villager met a servant
@@ -730,8 +853,6 @@ void turn(Game* pgame) {
 
 			// A villager touched a trap
 			if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
-				pgame->traps[1].x = -1;
-				pgame->traps[1].y = -1;
 				pgame->units[i].hp = 0;
 				pgame->units[i].position.x = -1;
 				pgame->units[i].position.y = -1;
@@ -740,8 +861,6 @@ void turn(Game* pgame) {
 				pgame->traps[0].y = -1;
 			}
 			if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2) == 1) {
-				pgame->traps[1].x = -1;
-				pgame->traps[1].y = -1;
 				pgame->units[i].hp = 0;
 				pgame->units[i].position.x = -1;
 				pgame->units[i].position.y = -1;

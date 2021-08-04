@@ -26,8 +26,8 @@
 
 #define MAX_HP_OF_AKARI 9
 #define MAX_HP_OF_VAMPIRE 9
-#define MAX_HP_OF_PEOPLE 3
-#define MAX_HP_OF_SERVANT 3
+#define MAX_HP_OF_PEOPLE 1
+#define MAX_HP_OF_SERVANT 1
 #define ATTACK_CHANCE 5
 
 // Check values of characters:
@@ -129,7 +129,8 @@ typedef struct _Game {
 } Game;
 
 // Declaration of functions
-int check_any_overlay_position(Game, int, int);		// Check if there is any overlay position of units
+int check_any_overlay_position(Game, int, int);			// Check if there is any overlay position of units by some unit
+int check_any_overlay_position_by_point(Game, Point);	// Check if there is any overlay position of units by position
 void display(Game);		// Display the game information on the screen.
 int get_distance(Point, Point);	// Get distance between 2 points.
 Point get_vector(Point, Point);	// Get vector between 2 points.
@@ -137,7 +138,7 @@ int get_warning_flags(Game);		// Get flags of warning
 void init_game(Game*);		// Initialize the game
 int input_attack_command();	// Attack command
 char input_move_command();	// Move command
-void morph_servant(Unit*);	// People ===> Servant
+void morph_servant(Unit*, Unit*);	// People ===> Servant
 void move(Point*, char);	// Move a unit
 void play();	// Play the game
 void quit();	// Quit
