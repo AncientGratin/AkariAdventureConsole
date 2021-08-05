@@ -142,10 +142,10 @@ int get_track_direction(Unit*, int);	// Decide the direction that Vampire or a s
 Point get_vector(Point, Point);	// Get vector between 2 points.
 int get_warning_flags(Game);		// Get flags of warning
 void init_game(Game*);		// Initialize the game
-int input_attack_command();	// Attack command
+char input_attack_command();	// Attack command
 char input_move_command();	// Move command
 void morph_servant(Unit*, Unit*);	// People ===> Servant
-void move(Point*, char);	// Move a unit
+void move(Point*, char);	// Move Akari
 void play();	// Play the game
 void quit();	// Quit
 void randomize_position(Point*);	// Randomize the position

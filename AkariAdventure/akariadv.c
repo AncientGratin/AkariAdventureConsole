@@ -577,19 +577,20 @@ void init_game(Game* pgame) {
 }
 
 // Attack command
-int input_attack_command() {
-	int n = 0;
+char input_attack_command() {
+	char command = '\0';
 
-	printf("U:Up D:Down L:Left R:Right N:Nothing\n");
+	printf("U:Up D:Down L:Left R:Right S:Skip\n");
 	printf("Please ender attack command: ");
-	scanf_s("%d", &n);
+	scanf_s("%c", &command);
+	scanf_s("%c", &command);
 
-	return n;
+	return command;
 }
 
 // Move command
 char input_move_command() {
-	char command;
+	char command = '\0';
 
 	printf("U:Up D:Down L:Left R:Right Q:Quit\n");
 	printf("Please ender move command: ");
@@ -609,36 +610,6 @@ void morph_servant(Unit* ppeople, Unit* pservant) {
 	if (pservant->id < ID_SERVANT1 || pservant->id > ID_SERVANT4)
 		return;
 
-	// When the argument is not a people, it does not happened.
-	//switch (ppeople->id) {
-	//case ID_PEOPLE1:
-	//	new_servant.id = ID_SERVANT1;
-	//	strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT1);
-	//	break;
-	//case ID_PEOPLE2:
-	//	new_servant.id = ID_SERVANT2;
-	//	strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT2);
-	//	break;
-	//case ID_PEOPLE3:
-	//	new_servant.id = ID_SERVANT3;
-	//	strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT3);
-	//	break;
-	//case ID_PEOPLE4:
-	//	new_servant.id = ID_SERVANT4;
-	//	strcpy_s(new_servant.name, CAPACITY_OF_NAME, NAME_SERVANT4);
-	//	break;
-	//default:
-	//	return;
-	//}
-
-	//// When a people is turned to a servant, HP is initialized.
-	//new_servant.hp = MAX_HP_OF_SERVANT;
-	//new_servant.attack_chance = -1;
-	//new_servant.position.x = ppeople->position.x;
-	//new_servant.position.y = ppeople->position.y;
-
-	//*ppeople = new_servant;
-
 	pservant->position.x = ppeople->position.x;
 	pservant->position.y = ppeople->position.y;
 
@@ -647,7 +618,7 @@ void morph_servant(Unit* ppeople, Unit* pservant) {
 	ppeople->hp = 0;
 }
 
-// Move a unit
+// Move Akari
 void move(Point* ppos, char command) {
 	Point new_pos;
 	new_pos.x = ppos->x;
@@ -760,7 +731,7 @@ void test() {
 
 // Execute 1 turn.
 void turn(Game* pgame) {
-	Point prev_pos, new_pos;
+	Point prev_pos, new_pos, atk_pos;
 	int i = 0;
 	int flag_overlay = 0, damage = 0, direction = 0;
 
@@ -909,7 +880,141 @@ void turn(Game* pgame) {
 			exit(0);
 		}
 	}
+	display(*pgame);
 
+	// Akari attacks
+	while (1) {
+		switch (input_attack_command()) {
+		case 'R':
+		case 'r':
+			atk_pos.x = pgame->units[ID_AKARI].position.x + 1;
+			atk_pos.y = pgame->units[ID_AKARI].position.y;
+			break;
+		case 'L':
+		case 'l':
+			atk_pos.x = pgame->units[ID_AKARI].position.x - 1;
+			atk_pos.y = pgame->units[ID_AKARI].position.y;
+			break;
+		case 'D':
+		case 'd':
+			atk_pos.x = pgame->units[ID_AKARI].position.x;
+			atk_pos.y = pgame->units[ID_AKARI].position.y + 1;
+			break;
+		case 'U':
+		case 'u':
+			atk_pos.x = pgame->units[ID_AKARI].position.x;
+			atk_pos.y = pgame->units[ID_AKARI].position.y - 1;
+			break;
+		case 'S':
+		case 's':
+			atk_pos.x = pgame->units[ID_AKARI].position.x;
+			atk_pos.y = pgame->units[ID_AKARI].position.y;
+			break;
+		default:
+			atk_pos.x = -1;
+			atk_pos.y = -1;
+		}
+
+		if (atk_pos.x > -1 && atk_pos.x < 8 &&
+			atk_pos.y > -1 && atk_pos.y < 8)
+			break;
+	}
+	if (atk_pos.x != pgame->units[ID_AKARI].position.x ||
+		atk_pos.y != pgame->units[ID_AKARI].position.y) {
+
+		flag_overlay = check_any_overlay_position_by_point(*pgame, atk_pos);
+
+		// Akari attacked Vampire
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE)) {
+			pgame->units[ID_VAMPIRE].hp--;
+
+			if (pgame->units[ID_VAMPIRE].hp == 0) {
+				// You win
+				printf("Akari won!\n");
+				printf("Thank you for playing!");
+				exit(0);
+			}
+		}
+
+		// Akari attacked a trap
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1)) {
+			pgame->traps[0].x = -1;
+			pgame->traps[0].y = -1;
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2)) {
+			pgame->traps[1].x = -1;
+			pgame->traps[1].y = -1;
+		}
+
+		// Akari attacked a villager
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1)) {
+			pgame->units[ID_PEOPLE1].hp--;
+
+			if (pgame->units[ID_PEOPLE1].hp == 0) {
+				pgame->units[ID_PEOPLE1].position.x = -1;
+				pgame->units[ID_PEOPLE1].position.y = -1;
+			}
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2)) {
+			pgame->units[ID_PEOPLE2].hp--;
+
+			if (pgame->units[ID_PEOPLE3].hp == 0) {
+				pgame->units[ID_PEOPLE3].position.x = -1;
+				pgame->units[ID_PEOPLE3].position.y = -1;
+			}
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3)) {
+			pgame->units[ID_PEOPLE3].hp--;
+
+			if (pgame->units[ID_PEOPLE3].hp == 0) {
+				pgame->units[ID_PEOPLE3].position.x = -1;
+				pgame->units[ID_PEOPLE3].position.y = -1;
+			}
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4)) {
+			pgame->units[ID_PEOPLE4].hp--;
+
+			if (pgame->units[ID_PEOPLE4].hp == 0) {
+				pgame->units[ID_PEOPLE4].position.x = -1;
+				pgame->units[ID_PEOPLE4].position.y = -1;
+			}
+		}
+
+		// Akari attacked a servant
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1)) {
+			pgame->units[ID_SERVANT1].hp--;
+
+			if (pgame->units[ID_SERVANT1].hp == 0) {
+				pgame->units[ID_SERVANT1].position.x = -1;
+				pgame->units[ID_SERVANT1].position.y = -1;
+			}
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2)) {
+			pgame->units[ID_SERVANT2].hp--;
+
+			if (pgame->units[ID_SERVANT3].hp == 0) {
+				pgame->units[ID_SERVANT3].position.x = -1;
+				pgame->units[ID_SERVANT3].position.y = -1;
+			}
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3)) {
+			pgame->units[ID_SERVANT3].hp--;
+
+			if (pgame->units[ID_SERVANT3].hp == 0) {
+				pgame->units[ID_SERVANT3].position.x = -1;
+				pgame->units[ID_SERVANT3].position.y = -1;
+			}
+		}
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4)) {
+			pgame->units[ID_SERVANT4].hp--;
+
+			if (pgame->units[ID_SERVANT4].hp == 0) {
+				pgame->units[ID_SERVANT4].position.x = -1;
+				pgame->units[ID_SERVANT4].position.y = -1;
+			}
+		}
+	}
+	
 	if (pgame->turn % 5 == 0) {
 		// People's turn
 		//  People move per 5 turns.
