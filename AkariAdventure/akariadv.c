@@ -735,6 +735,13 @@ void turn(Game* pgame) {
 	int i = 0;
 	int flag_overlay = 0, damage = 0, direction = 0;
 
+	prev_pos.x = -1;
+	prev_pos.y = -1;
+	new_pos.x = -1;
+	new_pos.y = -1;
+	atk_pos.x = -1;
+	atk_pos.y = -1;
+
 	// Increase the turn number.
 	pgame->turn++;
 
@@ -884,6 +891,10 @@ void turn(Game* pgame) {
 
 	// Akari attacks
 	while (1) {
+		// If any weapon doesn't remain, Akari doesn't attack.
+		if (pgame->units[ID_AKARI].attack_chance == 0)
+			break;
+
 		switch (input_attack_command()) {
 		case 'R':
 		case 'r':
@@ -1013,6 +1024,11 @@ void turn(Game* pgame) {
 				pgame->units[ID_SERVANT4].position.y = -1;
 			}
 		}
+
+		// After attack
+		atk_pos.x = -1;
+		atk_pos.y = -1;
+		pgame->units[ID_AKARI].attack_chance = max(pgame->units[ID_AKARI].attack_chance - 1, 0);
 	}
 	
 	if (pgame->turn % 5 == 0) {
