@@ -135,6 +135,7 @@ typedef struct _Game {
 // Declaration of functions
 int check_any_overlay_position(Game, int, int);			// Check if there is any overlay position of units by some unit
 int check_any_overlay_position_by_point(Game, Point);	// Check if there is any overlay position of units by position
+void check_villager_extinct(Game);		// If all people are dead, game over.
 void display(Game);		// Display the game information on the screen.
 int get_direction(Point);	// Get the direction from routine.
 int get_distance(Point, Point);	// Get distance between 2 points.

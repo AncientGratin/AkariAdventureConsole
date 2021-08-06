@@ -94,6 +94,23 @@ int check_any_overlay_position_by_point(Game game, Point here) {
 	return flags;
 }
 
+// If all people are dead, game over.
+void check_villager_extinct(Game game) {
+	int hp_sum = 0;
+	int i;
+
+	for (i = 0; i < 4; i++) {
+		hp_sum += game.units[ID_PEOPLE1 + i].hp;
+	}
+
+	if (hp_sum == 0) {
+		printf("All people are dead!\n");
+		printf("Game Over\n");
+
+		exit(0);
+	}
+}
+
 // Display the game information on the screen.
 void display(Game game) {
 	int i, j;
@@ -308,6 +325,10 @@ int get_track_direction(Unit* punits, int my_id) {
 	count++;
 
 	for (i = 0; i < 4; i++) {
+		if (punits[ID_PEOPLE1 + i].position.x < 0 ||
+			punits[ID_PEOPLE1 + i].position.y < 0)
+			continue;
+
 		arr_distance[i + 1] = get_distance(punits[my_id].position, punits[ID_PEOPLE1 + i].position);
 
 		if (arr_distance[i + 1] == min_distance)
@@ -521,7 +542,7 @@ void init_game(Game* pgame) {
 	};
 	g.units[ID_PEOPLE4].attack_chance = -1;
 
-	// Ser servants
+	// Set servants
 	g.units[ID_SERVANT1].attack_chance = -1;
 	g.units[ID_SERVANT1].hp = MAX_HP_OF_SERVANT;
 	g.units[ID_SERVANT1].id = ID_SERVANT1;
@@ -582,8 +603,7 @@ char input_attack_command() {
 
 	printf("U:Up D:Down L:Left R:Right S:Skip\n");
 	printf("Please ender attack command: ");
-	scanf_s("%c", &command);
-	scanf_s("%c", &command);
+	scanf_s("%c%c", &command);
 
 	return command;
 }
@@ -594,7 +614,7 @@ char input_move_command() {
 
 	printf("U:Up D:Down L:Left R:Right Q:Quit\n");
 	printf("Please ender move command: ");
-	scanf_s("%c", &command);
+	scanf_s("%c%c", &command);
 
 	return command;
 }
@@ -775,7 +795,7 @@ void turn(Game* pgame) {
 		if (pgame->units[ID_AKARI].hp == 0) {
 			display(*pgame);
 			printf("Akari lost!\n");
-			printf("Thank you for playing!");
+			printf("Game Over!");
 			exit(0);
 		}
 	}
@@ -790,7 +810,7 @@ void turn(Game* pgame) {
 		if (pgame->units[ID_AKARI].hp == 0) {
 			display(*pgame);
 			printf("Akari lost!\n");
-			printf("Thank you for playing!");
+			printf("Game Over!");
 			exit(0);
 		}
 	}
@@ -814,7 +834,7 @@ void turn(Game* pgame) {
 		if (pgame->units[ID_AKARI].hp == 0) {
 			display(*pgame);
 			printf("Akari lost!\n");
-			printf("Thank you for playing!");
+			printf("Game Over!");
 			exit(0);
 		}
 	}
@@ -828,7 +848,7 @@ void turn(Game* pgame) {
 		if (pgame->units[ID_AKARI].hp == 0) {
 			display(*pgame);
 			printf("Akari lost!\n");
-			printf("Thank you for playing!");
+			printf("Game Over!");
 			exit(0);
 		}
 	}
@@ -842,7 +862,7 @@ void turn(Game* pgame) {
 		if (pgame->units[ID_AKARI].hp == 0) {
 			display(*pgame);
 			printf("Akari lost!\n");
-			printf("Thank you for playing!");
+			printf("Game Over!");
 			exit(0);
 		}
 	}
@@ -856,7 +876,7 @@ void turn(Game* pgame) {
 		if (pgame->units[ID_AKARI].hp == 0) {
 			display(*pgame);
 			printf("Akari lost!\n");
-			printf("Thank you for playing!");
+			printf("Game Over!");
 			exit(0);
 		}
 	}
@@ -877,13 +897,13 @@ void turn(Game* pgame) {
 				// Draw
 				printf("Akari and Vampire killed each other!\n");
 			}
-			printf("Thank you for playing!");
+			printf("Game Over!");
 			exit(0);
 		}
 		else if (pgame->units[ID_VAMPIRE].hp == 0) {
 			// You win
 			printf("Akari won!\n");
-			printf("Thank you for playing!");
+			printf("Congratulations!");
 			exit(0);
 		}
 	}
@@ -942,7 +962,7 @@ void turn(Game* pgame) {
 			if (pgame->units[ID_VAMPIRE].hp == 0) {
 				// You win
 				printf("Akari won!\n");
-				printf("Thank you for playing!");
+				printf("Congratulations!");
 				exit(0);
 			}
 		}
@@ -959,70 +979,47 @@ void turn(Game* pgame) {
 
 		// Akari attacked a villager
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1)) {
-			pgame->units[ID_PEOPLE1].hp--;
-
-			if (pgame->units[ID_PEOPLE1].hp == 0) {
-				pgame->units[ID_PEOPLE1].position.x = -1;
-				pgame->units[ID_PEOPLE1].position.y = -1;
-			}
+			pgame->units[ID_PEOPLE1].hp =0;
+			pgame->units[ID_PEOPLE1].position.x = -1;
+			pgame->units[ID_PEOPLE1].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2)) {
-			pgame->units[ID_PEOPLE2].hp--;
-
-			if (pgame->units[ID_PEOPLE3].hp == 0) {
-				pgame->units[ID_PEOPLE3].position.x = -1;
-				pgame->units[ID_PEOPLE3].position.y = -1;
-			}
+			pgame->units[ID_PEOPLE2].hp = 0;
+			pgame->units[ID_PEOPLE2].position.x = -1;
+			pgame->units[ID_PEOPLE2].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3)) {
-			pgame->units[ID_PEOPLE3].hp--;
-
-			if (pgame->units[ID_PEOPLE3].hp == 0) {
-				pgame->units[ID_PEOPLE3].position.x = -1;
-				pgame->units[ID_PEOPLE3].position.y = -1;
-			}
+			pgame->units[ID_PEOPLE3].hp = 0;
+			pgame->units[ID_PEOPLE3].position.x = -1;
+			pgame->units[ID_PEOPLE3].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4)) {
-			pgame->units[ID_PEOPLE4].hp--;
-
-			if (pgame->units[ID_PEOPLE4].hp == 0) {
-				pgame->units[ID_PEOPLE4].position.x = -1;
-				pgame->units[ID_PEOPLE4].position.y = -1;
-			}
+			pgame->units[ID_PEOPLE4].hp = 0;
+			pgame->units[ID_PEOPLE4].position.x = -1;
+			pgame->units[ID_PEOPLE4].position.y = -1;
 		}
+		check_villager_extinct(*pgame);
 
 		// Akari attacked a servant
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1)) {
-			pgame->units[ID_SERVANT1].hp--;
-
-			if (pgame->units[ID_SERVANT1].hp == 0) {
-				pgame->units[ID_SERVANT1].position.x = -1;
-				pgame->units[ID_SERVANT1].position.y = -1;
-			}
+			pgame->units[ID_SERVANT1].hp = 0;
+			pgame->units[ID_SERVANT1].position.x = -1;
+			pgame->units[ID_SERVANT1].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2)) {
-			pgame->units[ID_SERVANT2].hp--;
-
-			if (pgame->units[ID_SERVANT3].hp == 0) {
-				pgame->units[ID_SERVANT3].position.x = -1;
-				pgame->units[ID_SERVANT3].position.y = -1;
-			}
+			pgame->units[ID_SERVANT2].hp = 0;
+			pgame->units[ID_SERVANT2].position.x = -1;
+			pgame->units[ID_SERVANT2].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3)) {
-			pgame->units[ID_SERVANT3].hp--;
-
-			if (pgame->units[ID_SERVANT3].hp == 0) {
-				pgame->units[ID_SERVANT3].position.x = -1;
-				pgame->units[ID_SERVANT3].position.y = -1;
-			}
+			pgame->units[ID_SERVANT3].hp = 0;
+			pgame->units[ID_SERVANT3].position.x = -1;
+			pgame->units[ID_SERVANT3].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4)) {
-			pgame->units[ID_SERVANT4].hp--;
-
-			if (pgame->units[ID_SERVANT4].hp == 0) {
-				pgame->units[ID_SERVANT4].position.x = -1;
-				pgame->units[ID_SERVANT4].position.y = -1;
-			}
+			pgame->units[ID_SERVANT4].hp = 0;
+			pgame->units[ID_SERVANT4].position.x = -1;
+			pgame->units[ID_SERVANT4].position.y = -1;
 		}
 
 		// After attack
@@ -1112,6 +1109,8 @@ void turn(Game* pgame) {
 			if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
 				morph_servant(&pgame->units[i], &pgame->units[i + 4]);
 			}
+
+			check_villager_extinct(*pgame);
 		}
 
 		// Servants' turn
@@ -1189,6 +1188,7 @@ void turn(Game* pgame) {
 			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
 				morph_servant(&pgame->units[ID_PEOPLE4], &pgame->units[ID_SERVANT4]);
 			}
+			check_villager_extinct(*pgame);
 
 			// A servant met Akari
 			if (GET_FLAG(flag_overlay, CHECK_VALUE_AKARI) == 1) {
@@ -1201,7 +1201,7 @@ void turn(Game* pgame) {
 				if (pgame->units[ID_AKARI].hp == 0) {
 					display(*pgame);
 					printf("Akari lost!\n");
-					printf("Thank you for playing!");
+					printf("Game Over");
 					exit(0);
 				}
 			}
@@ -1255,7 +1255,7 @@ void turn(Game* pgame) {
 			if (pgame->units[ID_VAMPIRE].hp == 0) {
 				display(*pgame);
 				printf("Akari won!\n");
-				printf("Thank you for playing!");
+				printf("Congratulations!");
 				exit(0);
 			}
 		}
@@ -1269,7 +1269,7 @@ void turn(Game* pgame) {
 			if (pgame->units[ID_VAMPIRE].hp == 0) {
 				display(*pgame);
 				printf("Akari won!\n");
-				printf("Thank you for playing!");
+				printf("Congratulations!");
 				exit(0);
 			}
 		}
@@ -1290,6 +1290,7 @@ void turn(Game* pgame) {
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
 			morph_servant(&pgame->units[ID_PEOPLE4], &pgame->units[ID_SERVANT4]);
 		}
+		check_villager_extinct(*pgame);
 
 		// Vampire met Akari
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_AKARI) == 1) {
@@ -1308,13 +1309,13 @@ void turn(Game* pgame) {
 					// Draw
 					printf("Akari and Vampire killed each other!\n");
 				}
-				printf("Thank you for playing!");
+				printf("Game Over");
 				exit(0);
 			}
 			else if (pgame->units[ID_VAMPIRE].hp == 0) {
 				// You win
 				printf("Akari won!\n");
-				printf("Thank you for playing!");
+				printf("Congratulations!");
 				exit(0);
 			}
 		}
