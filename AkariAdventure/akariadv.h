@@ -117,6 +117,12 @@
 #define LIGHT_ATTACK_SERVANT	2
 #define LIGHT_ATTACK_VILLAGER	3
 
+// Game over code
+#define CODE_GAMEOVER_AKARIWON		0
+#define CODE_GAMEOVER_DRAW			1
+#define CODE_GAMEOVER_AKARIDEAD		2
+#define CODE_GAMEOVER_PEOPLEDEAD	3
+
 // Get a flag
 #define GET_FLAG(flags, flag) flags / flag % 2
 
@@ -148,8 +154,9 @@ typedef struct _Game {
 // Declaration of functions
 int check_any_overlay_position(Game, int, int);			// Check if there is any overlay position of units by some unit
 int check_any_overlay_position_by_point(Game, Point);	// Check if there is any overlay position of units by position
-void check_villager_extinct(Game);		// If all people are dead, game over.
+int check_villager_extinct(Game);		// If all people are dead, game over.
 void display(Game);		// Display the game information on the screen.
+void game_over(int code);	// Show game over message and exit
 int get_direction(Point);	// Get the direction from routine.
 int get_distance(Point, Point);	// Get distance between 2 points.
 int get_track_direction(Unit*, int);	// Decide the direction that Vampire or a servant tracks Akari or a villager.
@@ -165,8 +172,11 @@ void quit();	// Quit by player
 void randomize_position(Point*);	// Randomize the position
 void set_attack_lights(int*, int);	// Set attack lights
 void set_warn_lights(int*, int);	// Set warning lights
-int* shuffle_indexes(int);	// Shuffle indexes of an array
 void test();
 void turn(Game*);	// Execute 1 turn.
+void turn_akari(Game*);		// Akari's turn
+void turn_people(Game*);	// People's turn
+void turn_servant(Game*);	// Servants' turn
+void turn_vampire(Game*);	// Vampire's turn
 
 #endif
