@@ -107,6 +107,16 @@
 #define FLAG_WARNING_SERVANT	0B100
 #define FLAG_WARNING_VILLAGER	0B1000
 
+// Index of lights
+#define LIGHT_WARN_VAMPIRE	0
+#define LIGHT_WARN_TRAP		1
+#define LIGHT_WARN_SERVANT	2
+#define LIGHT_WARN_VILLAGER	3
+#define LIGHT_ATTACK_VAMPIRE	0
+#define LIGHT_ATTACK_TRAP		1
+#define LIGHT_ATTACK_SERVANT	2
+#define LIGHT_ATTACK_VILLAGER	3
+
 // Get a flag
 #define GET_FLAG(flags, flag) flags / flag % 2
 
@@ -130,6 +140,9 @@ typedef struct _Game {
 
 	// Turn of this game
 	int turn;
+
+	int lights_warn[4];		// Lights of warning
+	int lights_attack[4];	// Lights of attack
 } Game;
 
 // Declaration of functions
@@ -150,6 +163,7 @@ void move(Point*, char);	// Move Akari
 void play();	// Play the game
 void quit();	// Quit
 void randomize_position(Point*);	// Randomize the position
+void set_light(int*, int, int);	// Set a light
 void test();
 void turn(Game*);	// Execute 1 turn.
 
