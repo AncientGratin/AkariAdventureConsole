@@ -161,9 +161,11 @@ char input_move_command();	// Move command
 void morph_servant(Unit*, Unit*);	// People ===> Servant
 void move(Point*, char);	// Move Akari
 void play();	// Play the game
-void quit();	// Quit
+void quit();	// Quit by player
 void randomize_position(Point*);	// Randomize the position
-void set_light(int*, int, int);	// Set a light
+void set_attack_lights(int*, int);	// Set attack lights
+void set_warn_lights(int*, int);	// Set warning lights
+int* shuffle_indexes(int);	// Shuffle indexes of an array
 void test();
 void turn(Game*);	// Execute 1 turn.
 
