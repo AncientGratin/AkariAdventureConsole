@@ -27,13 +27,15 @@ int check_any_overlay_position(Game game, int id_myself, int max_id) {
 		return -1;	// Wrong argument!
 	}
 	
-	// On stage only
-	if (my_pos.x < 0 || my_pos.x > 7 || my_pos.y < 0 || my_pos.y > 7)
+	if (!check_on_stage(my_pos))
 		return 0;
 
-	for (i = 0; i <= max_id; i++) {
+	for (i = 0; i <= min(max_id, 9); i++) {
 		// pass myself
 		if (i == id_myself)
+			continue;
+
+		if (!check_on_stage(game.units[i].position))
 			continue;
 
 		if (get_distance(my_pos, game.units[i].position) == 0) {
@@ -41,10 +43,10 @@ int check_any_overlay_position(Game game, int id_myself, int max_id) {
 		}
 	}
 
-	if (max_id >= ID_TRAP1 && get_distance(my_pos, game.traps[0]) == 0)
+	if (max_id >= ID_TRAP1 && id_myself != ID_TRAP1 && get_distance(my_pos, game.traps[0]) == 0)
 		flags += (int)pow(2, ID_TRAP1);
 
-	if (max_id >= ID_TRAP2 && get_distance(my_pos, game.traps[1]) == 0)
+	if (max_id >= ID_TRAP2 && id_myself != ID_TRAP2 && get_distance(my_pos, game.traps[1]) == 0)
 		flags += (int)pow(2, ID_TRAP2);
 
 	return flags;
@@ -58,7 +60,7 @@ int check_any_overlay_position_by_point(Game game, Point here) {
 	int flags = 0;
 	Point there;
 
-	if (here.x < 0 || here.x > 7 || here.y < 0 || here.y > 7) {
+	if (!check_on_stage(here)) {
 		return -1;	// Wrong argument!
 	}
 
@@ -66,7 +68,10 @@ int check_any_overlay_position_by_point(Game game, Point here) {
 		there.x = game.units[i].position.x;
 		there.y = game.units[i].position.y;
 
-		if (there.x < 0 || there.x > 7 || there.y < 0 || there.y > 7) {
+		/*if (there.x < 0 || there.x > 7 || there.y < 0 || there.y > 7) {
+			continue;
+		}*/
+		if (!check_on_stage(there)) {
 			continue;
 		}
 
@@ -78,20 +83,23 @@ int check_any_overlay_position_by_point(Game game, Point here) {
 	there.x = game.traps[0].x;
 	there.y = game.traps[0].y;
 
-	if (there.x > -1 && there.x < 8 && 
-		there.y > -1 && there.y < 8 &&
-		get_distance(here, there) == 0 )
+	if (check_on_stage(there) && get_distance(here, there) == 0)
 		flags += (int)pow(2, ID_TRAP1);
 
 	there.x = game.traps[1].x;
 	there.y = game.traps[1].y;
 
-	if (there.x > -1 && there.x < 8 &&
-		there.y > -1 && there.y < 8 &&
-		get_distance(here, there) == 0)
+	if (check_on_stage(there) && get_distance(here, there) == 0)
 		flags += (int)pow(2, ID_TRAP2);
 
 	return flags;
+}
+
+// Check if a point is on the stage.
+int check_on_stage(Point pos) {
+	return
+		(pos.x > -1 && pos.x < FIELD_WIDTH &&
+			pos.y > -1 && pos.y < FIELD_HEIGHT) ? 1 : 0;
 }
 
 // If all people are dead, game over.
@@ -261,7 +269,7 @@ void display(Game game) {
 	printf(" -----------------  AncientGratin\n\n");
 }
 
-// SHow game over message and exit
+// Show game over message and exit
 void game_over(int code) {
 	switch (code) {
 	case CODE_GAMEOVER_AKARIWON:
@@ -477,14 +485,14 @@ void init_game(Game* pgame) {
 	
 	// Initialize Akari
 	g.units[ID_AKARI].id = ID_AKARI;
-	strcpy_s(g.units[ID_AKARI].name, CAPACITY_OF_NAME, NAME_AKARI);
+	//strcpy_s(g.units[ID_AKARI].name, CAPACITY_OF_NAME, NAME_AKARI);
 	g.units[ID_AKARI].hp = MAX_HP_OF_AKARI;
 	randomize_position(&g.units[ID_AKARI].position);
 	g.units[ID_AKARI].attack_chance = ATTACK_CHANCE;
 
 	// Initialize Vampire
 	g.units[ID_VAMPIRE].id = ID_VAMPIRE;
-	strcpy_s(g.units[ID_VAMPIRE].name, CAPACITY_OF_NAME, NAME_VAMPIRE);
+	//strcpy_s(g.units[ID_VAMPIRE].name, CAPACITY_OF_NAME, NAME_VAMPIRE);
 	g.units[ID_VAMPIRE].hp = MAX_HP_OF_VAMPIRE;
 	while (1) {
 		randomize_position(&g.units[ID_VAMPIRE].position);
@@ -498,95 +506,32 @@ void init_game(Game* pgame) {
 	g.units[ID_VAMPIRE].attack_chance = -1;
 
 	// Initialize Village Peoples
-	g.units[ID_PEOPLE1].id = ID_PEOPLE1;
-	strcpy_s(g.units[ID_PEOPLE1].name, CAPACITY_OF_NAME, NAME_PEOPLE1);
-	g.units[ID_PEOPLE1].hp = MAX_HP_OF_PEOPLE;
-	while (1) {
-		randomize_position(&g.units[ID_PEOPLE1].position);
+	for (i = ID_PEOPLE1; i <= ID_PEOPLE4; i++) {
+		g.units[i].id = i;
+		//strcpy_s(g.units[i].name, CAPACITY_OF_NAME, NAME_PEOPLE1);
+		g.units[i].hp = MAX_HP_OF_PEOPLE;
+		while (1) {
+			randomize_position(&g.units[i].position);
 
-		distance = get_distance(g.units[ID_PEOPLE1].position, g.units[ID_AKARI].position);
-		if (distance == 0)
-			continue;
+			overlay_flags = check_any_overlay_position(g, i, i - 1);
+			if (overlay_flags != 0)
+				continue;
 
-		distance = get_distance(g.units[ID_PEOPLE1].position, g.units[ID_VAMPIRE].position);
-		if (distance == 0)
-			continue;
-
-		break;
-	};
-	g.units[ID_PEOPLE1].attack_chance = -1;
+			break;
+		};
+		g.units[i].attack_chance = -1;
+	}
 	
-	g.units[ID_PEOPLE2].id = ID_PEOPLE2;
-	strcpy_s(g.units[ID_PEOPLE2].name, CAPACITY_OF_NAME, NAME_PEOPLE2);
-	g.units[ID_PEOPLE2].hp = MAX_HP_OF_PEOPLE;
-	while (1) {
-		randomize_position(&g.units[ID_PEOPLE2].position);
-
-		overlay_flags = check_any_overlay_position(g, ID_PEOPLE2, ID_PEOPLE2 - 1);
-		if (overlay_flags != 0)
-			continue;
-
-		break;
-	};
-	g.units[ID_PEOPLE2].attack_chance = -1;
-
-	g.units[ID_PEOPLE3].id = ID_PEOPLE3;
-	strcpy_s(g.units[ID_PEOPLE3].name, CAPACITY_OF_NAME, NAME_PEOPLE3);
-	g.units[ID_PEOPLE3].hp = MAX_HP_OF_PEOPLE;
-	while (1) {
-		randomize_position(&g.units[ID_PEOPLE3].position);
-
-		overlay_flags = check_any_overlay_position(g, ID_PEOPLE3, ID_PEOPLE3 - 1);
-		if (overlay_flags != 0)
-			continue;
-
-		break;
-	};
-	g.units[ID_PEOPLE3].attack_chance = -1;
-
-	g.units[ID_PEOPLE4].id = ID_PEOPLE4;
-	strcpy_s(g.units[ID_PEOPLE4].name, CAPACITY_OF_NAME, NAME_PEOPLE4);
-	g.units[ID_PEOPLE4].hp = MAX_HP_OF_PEOPLE;
-	while (1) {
-		randomize_position(&g.units[ID_PEOPLE4].position);
-
-		overlay_flags = check_any_overlay_position(g, ID_PEOPLE4, ID_PEOPLE4 - 1);
-		if (overlay_flags != 0)
-			continue;
-
-		break;
-	};
-	g.units[ID_PEOPLE4].attack_chance = -1;
-
 	// Set servants
-	g.units[ID_SERVANT1].attack_chance = -1;
-	g.units[ID_SERVANT1].hp = MAX_HP_OF_SERVANT;
-	g.units[ID_SERVANT1].id = ID_SERVANT1;
-	strcpy_s(g.units[ID_SERVANT1].name, CAPACITY_OF_NAME, NAME_SERVANT1);
-	g.units[ID_SERVANT1].position.x = -1;
-	g.units[ID_SERVANT1].position.y = -1;
-
-	g.units[ID_SERVANT2].attack_chance = -1;
-	g.units[ID_SERVANT2].hp = MAX_HP_OF_SERVANT;
-	g.units[ID_SERVANT2].id = ID_SERVANT2;
-	strcpy_s(g.units[ID_SERVANT2].name, CAPACITY_OF_NAME, NAME_SERVANT1);
-	g.units[ID_SERVANT2].position.x = -1;
-	g.units[ID_SERVANT2].position.y = -1;
-
-	g.units[ID_SERVANT3].attack_chance = -1;
-	g.units[ID_SERVANT3].hp = MAX_HP_OF_SERVANT;
-	g.units[ID_SERVANT3].id = ID_SERVANT3;
-	strcpy_s(g.units[ID_SERVANT3].name, CAPACITY_OF_NAME, NAME_SERVANT1);
-	g.units[ID_SERVANT3].position.x = -1;
-	g.units[ID_SERVANT3].position.y = -1;
-
-	g.units[ID_SERVANT4].attack_chance = -1;
-	g.units[ID_SERVANT4].hp = MAX_HP_OF_SERVANT;
-	g.units[ID_SERVANT4].id = ID_SERVANT4;
-	strcpy_s(g.units[ID_SERVANT4].name, CAPACITY_OF_NAME, NAME_SERVANT1);
-	g.units[ID_SERVANT4].position.x = -1;
-	g.units[ID_SERVANT4].position.y = -1;
-
+	for (i = ID_SERVANT1; i <= ID_SERVANT4; i++) {
+		g.units[i].attack_chance = -1;
+		g.units[i].hp = MAX_HP_OF_SERVANT;
+		g.units[i].id = i;
+		//strcpy_s(g.units[i].name, CAPACITY_OF_NAME, NAME_SERVANT1);
+		g.units[i].position.x = -1;
+		g.units[i].position.y = -1;
+	}
+	
 	// Set traps
 	while (1) {
 		randomize_position(&g.traps[0]);
@@ -757,37 +702,37 @@ void test() {
 	printf("Turn : %d\n\n", game.turn);
 
 	printf("[Akari]\n");
-	printf("Name : %s\n", game.units[ID_AKARI].name);
+	//printf("Name : %s\n", game.units[ID_AKARI].name);
 	printf("HP : %d\n", game.units[ID_AKARI].hp);
 	printf("attack_chance : %d\n", game.units[ID_AKARI].attack_chance);
 	printf("Position : (%d, %d)\n\n", game.units[ID_AKARI].position.x, game.units[ID_AKARI].position.y);
 	
 	printf("[Vampire]\n");
-	printf("Name : %s\n", game.units[ID_VAMPIRE].name);
+	//printf("Name : %s\n", game.units[ID_VAMPIRE].name);
 	printf("HP : %d\n", game.units[ID_VAMPIRE].hp);
 	printf("attack_chance : %d\n", game.units[ID_VAMPIRE].attack_chance);
 	printf("Position : (%d, %d)\n\n", game.units[ID_VAMPIRE].position.x, game.units[ID_VAMPIRE].position.y);
 
 	printf("[People1]\n");
-	printf("Name : %s\n", game.units[ID_PEOPLE1].name);
+	//printf("Name : %s\n", game.units[ID_PEOPLE1].name);
 	printf("HP : %d\n", game.units[ID_PEOPLE1].hp);
 	printf("attack_chance : %d\n", game.units[ID_PEOPLE1].attack_chance);
 	printf("Position : (%d, %d)\n\n", game.units[ID_PEOPLE1].position.x, game.units[ID_PEOPLE1].position.y);
 
 	printf("[People2]\n");
-	printf("Name : %s\n", game.units[ID_PEOPLE2].name);
+	//printf("Name : %s\n", game.units[ID_PEOPLE2].name);
 	printf("HP : %d\n", game.units[ID_PEOPLE2].hp);
 	printf("attack_chance : %d\n", game.units[ID_PEOPLE2].attack_chance);
 	printf("Position : (%d, %d)\n\n", game.units[ID_PEOPLE2].position.x, game.units[ID_PEOPLE2].position.y);
 
 	printf("[People1]\n");
-	printf("Name : %s\n", game.units[ID_PEOPLE3].name);
+	//printf("Name : %s\n", game.units[ID_PEOPLE3].name);
 	printf("HP : %d\n", game.units[ID_PEOPLE3].hp);
 	printf("attack_chance : %d\n", game.units[ID_PEOPLE3].attack_chance);
 	printf("Position : (%d, %d)\n\n", game.units[ID_PEOPLE3].position.x, game.units[ID_PEOPLE3].position.y);
 
 	printf("[People1]\n");
-	printf("Name : %s\n", game.units[ID_PEOPLE4].name);
+	//printf("Name : %s\n", game.units[ID_PEOPLE4].name);
 	printf("HP : %d\n", game.units[ID_PEOPLE4].hp);
 	printf("attack_chance : %d\n", game.units[ID_PEOPLE4].attack_chance);
 	printf("Position : (%d, %d)\n\n", game.units[ID_PEOPLE4].position.x, game.units[ID_PEOPLE4].position.y);
@@ -1019,8 +964,7 @@ void turn_akari(Game* pgame) {
 			atk_pos.y = -1;
 		}
 
-		if (atk_pos.x > -1 && atk_pos.x < 8 &&
-			atk_pos.y > -1 && atk_pos.y < 8)
+		if (check_on_stage(atk_pos))
 			break;
 	}
 	if (atk_pos.x != pgame->units[ID_AKARI].position.x ||
@@ -1078,6 +1022,7 @@ void turn_akari(Game* pgame) {
 
 		}
 		if (!check_villager_extinct(*pgame)) {
+			display(*pgame);
 			game_over(CODE_GAMEOVER_PEOPLEDEAD);
 		}
 
@@ -1144,8 +1089,7 @@ void turn_people(Game* pgame) {
 				break;
 			}
 
-			if (new_pos.x > -1 && new_pos.x < 8 &&
-				new_pos.y > -1 && new_pos.x < 8) {
+			if (check_on_stage(new_pos)) {
 				break;
 			}
 
@@ -1198,6 +1142,7 @@ void turn_people(Game* pgame) {
 		}
 
 		if (!check_villager_extinct(*pgame)) {
+			display(*pgame);
 			game_over(CODE_GAMEOVER_PEOPLEDEAD);
 		}
 	}
@@ -1235,8 +1180,7 @@ void turn_servant(Game* pgame) {
 				break;
 			}
 
-			if (new_pos.x > -1 && new_pos.x < 8 &&
-				new_pos.y > -1 && new_pos.x < 8) {
+			if (check_on_stage(new_pos)) {
 				break;
 			}
 
@@ -1282,6 +1226,7 @@ void turn_servant(Game* pgame) {
 			morph_servant(&pgame->units[ID_PEOPLE4], &pgame->units[ID_SERVANT4]);
 		}
 		if (!check_villager_extinct(*pgame)) {
+			display(*pgame);
 			game_over(CODE_GAMEOVER_PEOPLEDEAD);
 		}
 
@@ -1327,8 +1272,7 @@ void turn_vampire(Game* pgame) {
 			break;
 		}
 
-		if (new_pos.x > -1 && new_pos.x < 8 &&
-			new_pos.y > -1 && new_pos.x < 8) {
+		if (check_on_stage(new_pos)) {
 			break;
 		}
 
@@ -1381,7 +1325,11 @@ void turn_vampire(Game* pgame) {
 	if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
 		morph_servant(&pgame->units[ID_PEOPLE4], &pgame->units[ID_SERVANT4]);
 	}
-	check_villager_extinct(*pgame);
+
+	if (!check_villager_extinct(*pgame)) {
+		display(*pgame);
+		game_over(CODE_GAMEOVER_PEOPLEDEAD);
+	}
 
 	// Vampire met Akari
 	if (GET_FLAG(flag_overlay, CHECK_VALUE_AKARI) == 1) {

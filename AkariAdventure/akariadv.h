@@ -133,7 +133,7 @@ typedef struct _Point {
 // Unit
 typedef struct _Unit {
 	int id;
-	char name[CAPACITY_OF_NAME];
+	//char name[CAPACITY_OF_NAME];
 	int hp;
 	Point position;
 	int attack_chance;
@@ -154,17 +154,18 @@ typedef struct _Game {
 // Declaration of functions
 int check_any_overlay_position(Game, int, int);			// Check if there is any overlay position of units by some unit
 int check_any_overlay_position_by_point(Game, Point);	// Check if there is any overlay position of units by position
-int check_villager_extinct(Game);		// If all people are dead, game over.
+int check_on_stage(Point);								// Check if a point is on the stage.
+int check_villager_extinct(Game);						// If all people are dead, game over.
 void display(Game);		// Display the game information on the screen.
-void game_over(int code);	// Show game over message and exit
-int get_direction(Point);	// Get the direction from routine.
-int get_distance(Point, Point);	// Get distance between 2 points.
+void game_over(int code);				// Show game over message and exit
+int get_direction(Point);				// Get the direction from routine.
+int get_distance(Point, Point);			// Get distance between 2 points.
 int get_track_direction(Unit*, int);	// Decide the direction that Vampire or a servant tracks Akari or a villager.
-Point get_vector(Point, Point);	// Get vector between 2 points.
-int get_warning_flags(Game);		// Get flags of warning
+Point get_vector(Point, Point);			// Get vector between 2 points.
+int get_warning_flags(Game);			// Get flags of warning
 void init_game(Game*);		// Initialize the game
 char input_attack_command();	// Attack command
-char input_move_command();	// Move command
+char input_move_command();		// Move command
 void morph_servant(Unit*, Unit*);	// People ===> Servant
 void move(Point*, char);	// Move Akari
 void play();	// Play the game
@@ -173,7 +174,7 @@ void randomize_position(Point*);	// Randomize the position
 void set_attack_lights(int*, int);	// Set attack lights
 void set_warn_lights(int*, int);	// Set warning lights
 void test();
-void turn(Game*);	// Execute 1 turn.
+void turn(Game*);			// Execute 1 turn.
 void turn_akari(Game*);		// Akari's turn
 void turn_people(Game*);	// People's turn
 void turn_servant(Game*);	// Servants' turn
