@@ -24,10 +24,10 @@ int check_any_overlay_position(Game game, int id_myself, int max_id) {
 		my_pos.y = game.units[id_myself].position.y;
 	}
 	else {
-		return -1;	// Wrong argument!
+		return ERROR;	// Wrong argument!
 	}
 	
-	if (!check_on_stage(my_pos))
+	if (check_on_stage(my_pos) == FALSE)
 		return 0;
 
 	for (i = 0; i <= min(max_id, 9); i++) {
@@ -35,7 +35,7 @@ int check_any_overlay_position(Game game, int id_myself, int max_id) {
 		if (i == id_myself)
 			continue;
 
-		if (!check_on_stage(game.units[i].position))
+		if (!check_on_stage(game.units[i].position) == TRUE)
 			continue;
 
 		if (get_distance(my_pos, game.units[i].position) == 0) {
@@ -60,8 +60,8 @@ int check_any_overlay_position_by_point(Game game, Point here) {
 	int flags = 0;
 	Point there;
 
-	if (!check_on_stage(here)) {
-		return -1;	// Wrong argument!
+	if (!check_on_stage(here) == TRUE) {
+		return ERROR;	// Wrong argument!
 	}
 
 	for (i = 0; i <= ID_SERVANT4; i++) {
@@ -71,7 +71,7 @@ int check_any_overlay_position_by_point(Game game, Point here) {
 		/*if (there.x < 0 || there.x > 7 || there.y < 0 || there.y > 7) {
 			continue;
 		}*/
-		if (!check_on_stage(there)) {
+		if (!check_on_stage(there) == TRUE) {
 			continue;
 		}
 
@@ -83,13 +83,13 @@ int check_any_overlay_position_by_point(Game game, Point here) {
 	there.x = game.traps[0].x;
 	there.y = game.traps[0].y;
 
-	if (check_on_stage(there) && get_distance(here, there) == 0)
+	if (check_on_stage(there) == TRUE && get_distance(here, there) == 0)
 		flags += (int)pow(2, ID_TRAP1);
 
 	there.x = game.traps[1].x;
 	there.y = game.traps[1].y;
 
-	if (check_on_stage(there) && get_distance(here, there) == 0)
+	if (check_on_stage(there) == TRUE && get_distance(here, there) == 0)
 		flags += (int)pow(2, ID_TRAP2);
 
 	return flags;
@@ -99,7 +99,7 @@ int check_any_overlay_position_by_point(Game game, Point here) {
 int check_on_stage(Point pos) {
 	return
 		(pos.x > -1 && pos.x < FIELD_WIDTH &&
-			pos.y > -1 && pos.y < FIELD_HEIGHT) ? 1 : 0;
+			pos.y > -1 && pos.y < FIELD_HEIGHT) ? TRUE : FALSE;
 }
 
 // If all people are dead, game over.
@@ -111,7 +111,7 @@ int check_villager_extinct(Game game) {
 		hp_sum += game.units[ID_PEOPLE1 + i].hp;
 	}
 
-	return hp_sum > 0 ? 1 : 0;
+	return hp_sum > 0 ? TRUE : hp_sum == 0 ? FALSE : ERROR;
 }
 
 // Display the game information on the screen.
@@ -188,40 +188,40 @@ void display(Game game) {
 
 			dbg_overlay_flags = check_any_overlay_position_by_point(game, dbg_pos);
 
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_AKARI)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_AKARI) == 1) {
 				dbg_c = 'A';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_VAMPIRE)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_VAMPIRE) == 1) {
 				dbg_c = dbg_c == ' ' ? 'V' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE1)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE1) == 1) {
 				dbg_c = dbg_c == ' ' ? 'P' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE2)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE2) == 1) {
 				dbg_c = dbg_c == ' ' ? 'P' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE3)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE3) == 1) {
 				dbg_c = dbg_c == ' ' ? 'P' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE4)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_PEOPLE4) == 1) {
 				dbg_c = dbg_c == ' ' ? 'P' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT1)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT1) == 1) {
 				dbg_c = dbg_c == ' ' ? 'S' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT2)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT2) == 1) {
 				dbg_c = dbg_c == ' ' ? 'S' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT3)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT3) == 1) {
 				dbg_c = dbg_c == ' ' ? 'S' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT4)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_SERVANT4) == 1) {
 				dbg_c = dbg_c == ' ' ? 'S' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_TRAP1)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_TRAP1) == 1) {
 				dbg_c = dbg_c == ' ' ? 'T' : 'O';
 			}
-			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_TRAP2)) {
+			if (GET_FLAG(dbg_overlay_flags, CHECK_VALUE_TRAP2) == 1) {
 				dbg_c = dbg_c == ' ' ? 'T' : 'O';
 			}
 			
@@ -514,7 +514,7 @@ void init_game(Game* pgame) {
 			randomize_position(&g.units[i].position);
 
 			overlay_flags = check_any_overlay_position(g, i, i - 1);
-			if (overlay_flags != 0)
+			if (overlay_flags == TRUE)
 				continue;
 
 			break;
@@ -537,7 +537,7 @@ void init_game(Game* pgame) {
 		randomize_position(&g.traps[0]);
 
 		overlay_flags = check_any_overlay_position(g, ID_TRAP1, ID_TRAP1 - 1);
-		if (overlay_flags != 0)
+		if (overlay_flags == TRUE)
 			continue;
 
 		break;
@@ -547,7 +547,7 @@ void init_game(Game* pgame) {
 		randomize_position(&g.traps[1]);
 
 		overlay_flags = check_any_overlay_position(g, ID_TRAP2, ID_TRAP2 - 1);
-		if (overlay_flags != 0)
+		if (overlay_flags == TRUE)
 			continue;
 
 		break;
@@ -670,28 +670,28 @@ void set_attack_lights(int* lights, int flags) {
 	lights[LIGHT_ATTACK_VAMPIRE] = GET_FLAG(flags, CHECK_VALUE_VAMPIRE);
 	
 	lights[LIGHT_ATTACK_TRAP] =
-		GET_FLAG(flags, CHECK_VALUE_TRAP1) || 
-		GET_FLAG(flags, CHECK_VALUE_TRAP2);
+		GET_FLAG(flags, CHECK_VALUE_TRAP1) == 1 ||
+		GET_FLAG(flags, CHECK_VALUE_TRAP2) == 1;
 	
 	lights[LIGHT_ATTACK_SERVANT] =
-		GET_FLAG(flags, CHECK_VALUE_SERVANT1) ||
-		GET_FLAG(flags, CHECK_VALUE_SERVANT2) ||
-		GET_FLAG(flags, CHECK_VALUE_SERVANT3) ||
-		GET_FLAG(flags, CHECK_VALUE_SERVANT4);
+		GET_FLAG(flags, CHECK_VALUE_SERVANT1) == 1 ||
+		GET_FLAG(flags, CHECK_VALUE_SERVANT2) == 1 ||
+		GET_FLAG(flags, CHECK_VALUE_SERVANT3) == 1 ||
+		GET_FLAG(flags, CHECK_VALUE_SERVANT4) == 1;
 
 	lights[LIGHT_ATTACK_VILLAGER] =
-		GET_FLAG(flags, CHECK_VALUE_PEOPLE1) ||
-		GET_FLAG(flags, CHECK_VALUE_PEOPLE2) ||
-		GET_FLAG(flags, CHECK_VALUE_PEOPLE3) ||
-		GET_FLAG(flags, CHECK_VALUE_PEOPLE4);
+		GET_FLAG(flags, CHECK_VALUE_PEOPLE1) == 1 ||
+		GET_FLAG(flags, CHECK_VALUE_PEOPLE2) == 1 ||
+		GET_FLAG(flags, CHECK_VALUE_PEOPLE3) == 1 ||
+		GET_FLAG(flags, CHECK_VALUE_PEOPLE4) == 1;
 }
 
 // Set warning lights
 void set_warn_lights(int* lights, int flags) {
-	lights[LIGHT_WARN_VAMPIRE] = GET_FLAG(flags, FLAG_WARNING_VAMPIRE);
-	lights[LIGHT_WARN_TRAP] = GET_FLAG(flags, FLAG_WARNING_TRAP);
-	lights[LIGHT_WARN_SERVANT] = GET_FLAG(flags, FLAG_WARNING_SERVANT);
-	lights[LIGHT_WARN_VILLAGER] = GET_FLAG(flags, FLAG_WARNING_VILLAGER);
+	lights[LIGHT_WARN_VAMPIRE] = GET_FLAG(flags, FLAG_WARNING_VAMPIRE) == 1;
+	lights[LIGHT_WARN_TRAP] = GET_FLAG(flags, FLAG_WARNING_TRAP) == 1;
+	lights[LIGHT_WARN_SERVANT] = GET_FLAG(flags, FLAG_WARNING_SERVANT) == 1;
+	lights[LIGHT_WARN_VILLAGER] = GET_FLAG(flags, FLAG_WARNING_VILLAGER) == 1;
 }
 
 // Testing
@@ -817,7 +817,7 @@ void turn_akari(Game* pgame) {
 	set_warn_lights(pgame->lights_warn, flag_warn);
 	display(*pgame);	// Refresh game information
 
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1)) {
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
 		// Touch a trap
 		pgame->traps[0].x = -1;
 		pgame->traps[0].y = -1;
@@ -844,17 +844,17 @@ void turn_akari(Game* pgame) {
 			game_over(CODE_GAMEOVER_AKARIDEAD);
 		}
 	}
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) ||
-		GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) ||
-		GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) ||
-		GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4)) {
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1 ||
+		GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1 ||
+		GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1 ||
+		GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
 		// Met a villager
 		if (pgame->units[ID_AKARI].hp < MAX_HP_OF_AKARI) {
 			pgame->units[ID_AKARI].hp++;
 			display(*pgame);
 		}
 	}
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1)) {
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1) {
 		// Met a servant
 		pgame->units[ID_SERVANT1].hp = 0;
 		pgame->units[ID_SERVANT1].position.x = -1;
@@ -866,7 +866,7 @@ void turn_akari(Game* pgame) {
 			game_over(CODE_GAMEOVER_AKARIDEAD);
 		}
 	}
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2)) {
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1) {
 		// Met a servant
 		pgame->units[ID_SERVANT2].hp = 0;
 		pgame->units[ID_SERVANT2].position.x = -1;
@@ -878,7 +878,7 @@ void turn_akari(Game* pgame) {
 			game_over(CODE_GAMEOVER_AKARIDEAD);
 		}
 	}
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3)) {
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1) {
 		// Met a servant
 		pgame->units[ID_SERVANT3].hp = 0;
 		pgame->units[ID_SERVANT3].position.x = -1;
@@ -890,7 +890,7 @@ void turn_akari(Game* pgame) {
 			game_over(CODE_GAMEOVER_AKARIDEAD);
 		}
 	}
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4)) {
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
 		// Met a servant
 		pgame->units[ID_SERVANT4].hp = 0;
 		pgame->units[ID_SERVANT4].position.x = -1;
@@ -902,7 +902,7 @@ void turn_akari(Game* pgame) {
 			game_over(CODE_GAMEOVER_AKARIDEAD);
 		}
 	}
-	if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE)) {
+	if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
 		// Met vampire
 		damage = min(pgame->units[ID_AKARI].hp, pgame->units[ID_VAMPIRE].hp);
 		pgame->units[ID_AKARI].hp -= damage;
@@ -974,7 +974,7 @@ void turn_akari(Game* pgame) {
 		set_attack_lights(&pgame->lights_attack, flag_overlay);
 
 		// Akari attacked Vampire
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
 			pgame->units[ID_VAMPIRE].hp--;
 
 			if (pgame->units[ID_VAMPIRE].hp == 0) {
@@ -985,40 +985,40 @@ void turn_akari(Game* pgame) {
 		}
 
 		// Akari attacked a trap
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
 			pgame->traps[0].x = -1;
 			pgame->traps[0].y = -1;
 		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2) == 1) {
 			pgame->traps[1].x = -1;
 			pgame->traps[1].y = -1;
 		}
 
 		// Akari attacked a villager
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1) {
 			pgame->units[ID_PEOPLE1].hp = 0;
 			pgame->units[ID_PEOPLE1].position.x = -1;
 			pgame->units[ID_PEOPLE1].position.y = -1;
 		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1) {
 			pgame->units[ID_PEOPLE2].hp = 0;
 			pgame->units[ID_PEOPLE2].position.x = -1;
 			pgame->units[ID_PEOPLE2].position.y = -1;
 		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1) {
 			pgame->units[ID_PEOPLE3].hp = 0;
 			pgame->units[ID_PEOPLE3].position.x = -1;
 			pgame->units[ID_PEOPLE3].position.y = -1;
 		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
 			pgame->units[ID_PEOPLE4].hp = 0;
 			pgame->units[ID_PEOPLE4].position.x = -1;
 			pgame->units[ID_PEOPLE4].position.y = -1;
 		}
-		if (!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4)) {
+		if (!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1 &&
+			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1 &&
+			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1 &&
+			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
 
 		}
 		if (!check_villager_extinct(*pgame)) {
@@ -1027,30 +1027,30 @@ void turn_akari(Game* pgame) {
 		}
 
 		// Akari attacked a servant
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1) {
 			pgame->units[ID_SERVANT1].hp = 0;
 			pgame->units[ID_SERVANT1].position.x = -1;
 			pgame->units[ID_SERVANT1].position.y = -1;
 		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1) {
 			pgame->units[ID_SERVANT2].hp = 0;
 			pgame->units[ID_SERVANT2].position.x = -1;
 			pgame->units[ID_SERVANT2].position.y = -1;
 		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1) {
 			pgame->units[ID_SERVANT3].hp = 0;
 			pgame->units[ID_SERVANT3].position.x = -1;
 			pgame->units[ID_SERVANT3].position.y = -1;
 		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4)) {
+		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
 			pgame->units[ID_SERVANT4].hp = 0;
 			pgame->units[ID_SERVANT4].position.x = -1;
 			pgame->units[ID_SERVANT4].position.y = -1;
 		}
-		if (!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4)) {
+		if (!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1 &&
+			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1 &&
+			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1 &&
+			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
 		}
 
 		// After attack

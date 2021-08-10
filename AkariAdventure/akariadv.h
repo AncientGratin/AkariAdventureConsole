@@ -1,17 +1,22 @@
 #define __AKARIADV_H__
 #ifdef __AKARIADV_H__
 
+// Return values of check functions
+#define TRUE	 1
+#define FALSE	 0
+#define ERROR	-1
+
 // Constants of the Dimension
-#define WEST 1
-#define NORTH 2
-#define SOUTH 3
-#define EAST 4
-#define STAY 0
-#define OTHER -1
-#define NORTHWEST 21
-#define NORTHEAST 24
-#define SOUTHWEST 31
-#define SOUTHEAST 34
+#define WEST		 1
+#define NORTH		 2
+#define SOUTH		 3
+#define EAST		 4
+#define STAY		 0
+#define OTHER		-1
+#define NORTHWEST	21
+#define NORTHEAST	24
+#define SOUTHWEST	31
+#define SOUTHEAST	34
 
 // The capacity of name
 #define CAPACITY_OF_NAME 9
