@@ -1214,16 +1214,24 @@ void turn_servant(Game* pgame) {
 
 		// A servant met a villager
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1) {
-			morph_servant(&pgame->units[ID_PEOPLE1], &pgame->units[ID_SERVANT1]);
+			pgame->units[ID_PEOPLE1].hp = 0;
+			pgame->units[ID_PEOPLE1].position.x = -1;
+			pgame->units[ID_PEOPLE1].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1) {
-			morph_servant(&pgame->units[ID_PEOPLE2], &pgame->units[ID_SERVANT2]);
+			pgame->units[ID_PEOPLE2].hp = 0;
+			pgame->units[ID_PEOPLE2].position.x = -1;
+			pgame->units[ID_PEOPLE2].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1) {
-			morph_servant(&pgame->units[ID_PEOPLE3], &pgame->units[ID_SERVANT3]);
+			pgame->units[ID_PEOPLE3].hp = 0;
+			pgame->units[ID_PEOPLE3].position.x = -1;
+			pgame->units[ID_PEOPLE3].position.y = -1;
 		}
 		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
-			morph_servant(&pgame->units[ID_PEOPLE4], &pgame->units[ID_SERVANT4]);
+			pgame->units[ID_PEOPLE4].hp = 0;
+			pgame->units[ID_PEOPLE4].position.x = -1;
+			pgame->units[ID_PEOPLE4].position.y = -1;
 		}
 		if (!check_villager_extinct(*pgame)) {
 			display(*pgame);
