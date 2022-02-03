@@ -927,134 +927,134 @@ void turn_akari(Game* pgame) {
 	}
 	display(*pgame);
 
+
 	// Akari attacks
-	while (1) {
-		// If any weapon doesn't remain, Akari doesn't attack.
-		if (pgame->units[ID_AKARI].attack_chance == 0)
-			break;
-
-		switch (input_attack_command()) {
-		case 'R':
-		case 'r':
-			atk_pos.x = pgame->units[ID_AKARI].position.x + 1;
-			atk_pos.y = pgame->units[ID_AKARI].position.y;
-			break;
-		case 'L':
-		case 'l':
-			atk_pos.x = pgame->units[ID_AKARI].position.x - 1;
-			atk_pos.y = pgame->units[ID_AKARI].position.y;
-			break;
-		case 'D':
-		case 'd':
-			atk_pos.x = pgame->units[ID_AKARI].position.x;
-			atk_pos.y = pgame->units[ID_AKARI].position.y + 1;
-			break;
-		case 'U':
-		case 'u':
-			atk_pos.x = pgame->units[ID_AKARI].position.x;
-			atk_pos.y = pgame->units[ID_AKARI].position.y - 1;
-			break;
-		case 'S':
-		case 's':
-			atk_pos.x = pgame->units[ID_AKARI].position.x;
-			atk_pos.y = pgame->units[ID_AKARI].position.y;
-			break;
-		default:
-			atk_pos.x = -1;
-			atk_pos.y = -1;
-		}
-
-		if (check_on_stage(atk_pos))
-			break;
-	}
-	if (atk_pos.x != pgame->units[ID_AKARI].position.x ||
-		atk_pos.y != pgame->units[ID_AKARI].position.y) {
-
-		flag_overlay = check_any_overlay_position_by_point(*pgame, atk_pos);
-		set_attack_lights(&pgame->lights_attack, flag_overlay);
-
-		// Akari attacked Vampire
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
-			pgame->units[ID_VAMPIRE].hp--;
-
-			if (pgame->units[ID_VAMPIRE].hp == 0) {
-				// You win
-				display(*pgame);
-				game_over(CODE_GAMEOVER_AKARIWON);
+	// If any weapon doesn't remain, Akari doesn't attack.
+	if (pgame->units[ID_AKARI].attack_chance > 0) {
+		while (1) {
+			switch (input_attack_command()) {
+			case 'R':
+			case 'r':
+				atk_pos.x = pgame->units[ID_AKARI].position.x + 1;
+				atk_pos.y = pgame->units[ID_AKARI].position.y;
+				break;
+			case 'L':
+			case 'l':
+				atk_pos.x = pgame->units[ID_AKARI].position.x - 1;
+				atk_pos.y = pgame->units[ID_AKARI].position.y;
+				break;
+			case 'D':
+			case 'd':
+				atk_pos.x = pgame->units[ID_AKARI].position.x;
+				atk_pos.y = pgame->units[ID_AKARI].position.y + 1;
+				break;
+			case 'U':
+			case 'u':
+				atk_pos.x = pgame->units[ID_AKARI].position.x;
+				atk_pos.y = pgame->units[ID_AKARI].position.y - 1;
+				break;
+			case 'S':
+			case 's':
+				atk_pos.x = pgame->units[ID_AKARI].position.x;
+				atk_pos.y = pgame->units[ID_AKARI].position.y;
+				break;
+			default:
+				atk_pos.x = -1;
+				atk_pos.y = -1;
 			}
-		}
 
-		// Akari attacked a trap
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
-			pgame->traps[0].x = -1;
-			pgame->traps[0].y = -1;
+			if (check_on_stage(atk_pos))
+				break;
 		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2) == 1) {
-			pgame->traps[1].x = -1;
-			pgame->traps[1].y = -1;
-		}
+		if (atk_pos.x != pgame->units[ID_AKARI].position.x ||
+			atk_pos.y != pgame->units[ID_AKARI].position.y) {
 
-		// Akari attacked a villager
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1) {
-			pgame->units[ID_PEOPLE1].hp = 0;
-			pgame->units[ID_PEOPLE1].position.x = -1;
-			pgame->units[ID_PEOPLE1].position.y = -1;
-		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1) {
-			pgame->units[ID_PEOPLE2].hp = 0;
-			pgame->units[ID_PEOPLE2].position.x = -1;
-			pgame->units[ID_PEOPLE2].position.y = -1;
-		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1) {
-			pgame->units[ID_PEOPLE3].hp = 0;
-			pgame->units[ID_PEOPLE3].position.x = -1;
-			pgame->units[ID_PEOPLE3].position.y = -1;
-		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
-			pgame->units[ID_PEOPLE4].hp = 0;
-			pgame->units[ID_PEOPLE4].position.x = -1;
-			pgame->units[ID_PEOPLE4].position.y = -1;
-		}
-		if (!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1 &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1 &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1 &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
+			flag_overlay = check_any_overlay_position_by_point(*pgame, atk_pos);
+			set_attack_lights(&pgame->lights_attack, flag_overlay);
 
-		}
-		if (!check_villager_extinct(*pgame)) {
-			display(*pgame);
-			game_over(CODE_GAMEOVER_PEOPLEDEAD);
-		}
+			// Akari attacked Vampire
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_VAMPIRE) == 1) {
+				pgame->units[ID_VAMPIRE].hp--;
 
-		// Akari attacked a servant
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1) {
-			pgame->units[ID_SERVANT1].hp = 0;
-			pgame->units[ID_SERVANT1].position.x = -1;
-			pgame->units[ID_SERVANT1].position.y = -1;
-		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1) {
-			pgame->units[ID_SERVANT2].hp = 0;
-			pgame->units[ID_SERVANT2].position.x = -1;
-			pgame->units[ID_SERVANT2].position.y = -1;
-		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1) {
-			pgame->units[ID_SERVANT3].hp = 0;
-			pgame->units[ID_SERVANT3].position.x = -1;
-			pgame->units[ID_SERVANT3].position.y = -1;
-		}
-		if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
-			pgame->units[ID_SERVANT4].hp = 0;
-			pgame->units[ID_SERVANT4].position.x = -1;
-			pgame->units[ID_SERVANT4].position.y = -1;
-		}
-		if (!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1 &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1 &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1 &&
-			!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
-		}
+				if (pgame->units[ID_VAMPIRE].hp == 0) {
+					// You win
+					display(*pgame);
+					game_over(CODE_GAMEOVER_AKARIWON);
+				}
+			}
 
-		// After attack
-		pgame->units[ID_AKARI].attack_chance = max(pgame->units[ID_AKARI].attack_chance - 1, 0);
+			// Akari attacked a trap
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP1) == 1) {
+				pgame->traps[0].x = -1;
+				pgame->traps[0].y = -1;
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_TRAP2) == 1) {
+				pgame->traps[1].x = -1;
+				pgame->traps[1].y = -1;
+			}
+
+			// Akari attacked a villager
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1) {
+				pgame->units[ID_PEOPLE1].hp = 0;
+				pgame->units[ID_PEOPLE1].position.x = -1;
+				pgame->units[ID_PEOPLE1].position.y = -1;
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1) {
+				pgame->units[ID_PEOPLE2].hp = 0;
+				pgame->units[ID_PEOPLE2].position.x = -1;
+				pgame->units[ID_PEOPLE2].position.y = -1;
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1) {
+				pgame->units[ID_PEOPLE3].hp = 0;
+				pgame->units[ID_PEOPLE3].position.x = -1;
+				pgame->units[ID_PEOPLE3].position.y = -1;
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
+				pgame->units[ID_PEOPLE4].hp = 0;
+				pgame->units[ID_PEOPLE4].position.x = -1;
+				pgame->units[ID_PEOPLE4].position.y = -1;
+			}
+			if (!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE1) == 1 &&
+				!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE2) == 1 &&
+				!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE3) == 1 &&
+				!GET_FLAG(flag_overlay, CHECK_VALUE_PEOPLE4) == 1) {
+
+			}
+			if (!check_villager_extinct(*pgame)) {
+				display(*pgame);
+				game_over(CODE_GAMEOVER_PEOPLEDEAD);
+			}
+
+			// Akari attacked a servant
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1) {
+				pgame->units[ID_SERVANT1].hp = 0;
+				pgame->units[ID_SERVANT1].position.x = -1;
+				pgame->units[ID_SERVANT1].position.y = -1;
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1) {
+				pgame->units[ID_SERVANT2].hp = 0;
+				pgame->units[ID_SERVANT2].position.x = -1;
+				pgame->units[ID_SERVANT2].position.y = -1;
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1) {
+				pgame->units[ID_SERVANT3].hp = 0;
+				pgame->units[ID_SERVANT3].position.x = -1;
+				pgame->units[ID_SERVANT3].position.y = -1;
+			}
+			if (GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
+				pgame->units[ID_SERVANT4].hp = 0;
+				pgame->units[ID_SERVANT4].position.x = -1;
+				pgame->units[ID_SERVANT4].position.y = -1;
+			}
+			if (!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT1) == 1 &&
+				!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT2) == 1 &&
+				!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT3) == 1 &&
+				!GET_FLAG(flag_overlay, CHECK_VALUE_SERVANT4) == 1) {
+			}
+
+			// After attack
+			pgame->units[ID_AKARI].attack_chance = max(pgame->units[ID_AKARI].attack_chance - 1, 0);
+		}
 	}
 }
 
